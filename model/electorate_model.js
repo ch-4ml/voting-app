@@ -1,36 +1,12 @@
 class Electorate {
-    // 선거권자 추가
-    create(electorates) {
-        return new Promise(async (resolve, reject) => {
-            let stmt = "";
-            let electorate;
-            for(var i = 0; i < electorates.length; i++) {
-                electorate = electorates[i];
-                stmt += '(' + electorate.vote_id + ', "' + electorate.name + '", "' + electorate.name_ex + '", "' + electorate.phone + '")';
-                if(i < electorates.length - 1) stmt += ', ';
-            }
-            let sql = 'INSERT INTO electorate (vote_id, name, name_ex, phone) VALUES ' + stmt;
-            try {
-                let result = await db.query(sql);
-                resolve(result);
-                console.log('result :' + result);
-            } catch(err) {
-                console.log(err);
-                reject(err);
-            }
-        });
-    }
-
     // 선거권자 목록에 있는지 조회
-    select(electorate) {
+    select(id, name) { // 선거 id, 선거권자 name
         return new Promise(async (resolve, reject) => {
-            let sql = 'SELECT * FROM electorate WHERE VOTE_ID = ? AND NAME = ? AND NAME_EX = ?';
             try {
-                let result = await db.query(sql, [electorate.vote_id, electorate.name, electorate.name_ex]);
-                resolve(result);
-            } catch(err) {
-                console.log(err);
-                reject(err);
+                const result = await 
+            } catch (err) {
+                console.log(`선거권자 조회 오류: ${err}`);
+                reject("선거권자 조회 실패");
             }
         });
     }

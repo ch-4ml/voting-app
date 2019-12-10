@@ -8,6 +8,8 @@ const candidateSchema = mongoose.Schema({
     birth   : Date,
     detail  : String,
     votes   : Number
+    // 후보자가 어느 선거에 포함되어 있는지
+    // 후보자 종류가 뭔지
 });
 
 module.exports = mongoose.model('Candidate', candidateSchema);
