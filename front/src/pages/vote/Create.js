@@ -22,9 +22,9 @@ export default class Create extends Component {
             limit: '',
             vote_id: '',
 
-            name: '',
-            name_ex: '',
-            phone: '',
+            // name: '',
+            // name_ex: '',
+            // phone: '',
             candidateList1: '',
             candidateList2: '',
             candidateList3: '',
@@ -123,7 +123,7 @@ export default class Create extends Component {
     handleCreateVoteCandidate1Submit = async e => {
         e.preventDefault()
 
-        const { vote_id, candidateList1 } = this.state
+        const { vote_id, candidateList1, type } = this.state
 
         await fetch('/admin/candidate', {
             method: 'POST',
@@ -132,7 +132,8 @@ export default class Create extends Component {
             },
             body: JSON.stringify({
                 'vote_id': vote_id,
-                'candidates': candidateList1
+                'candidates': candidateList1,
+                'type': 1
             })
         }).then(result => result.json())
             .then(json => {
@@ -148,7 +149,7 @@ export default class Create extends Component {
     handleCreateVoteCandidate2Submit = async e => {
         e.preventDefault()
 
-        const { vote_id, candidateList2 } = this.state
+        const { vote_id, candidateList2, type } = this.state
 
         await fetch('/admin/candidate', {
             method: 'POST',
@@ -157,7 +158,8 @@ export default class Create extends Component {
             },
             body: JSON.stringify({
                 'vote_id': vote_id,
-                'candidates': candidateList2
+                'candidates': candidateList2,
+                'type': 2
             })
         }).then(result => result.json())
             .then(json => {
@@ -182,7 +184,8 @@ export default class Create extends Component {
             },
             body: JSON.stringify({
                 'vote_id': vote_id,
-                'candidates': candidateList3
+                'candidates': candidateList3,
+                'type': 3
             })
         }).then(result => result.json())
             .then(json => {

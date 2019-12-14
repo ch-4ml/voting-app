@@ -95,7 +95,7 @@ export default class ResultDetail extends Component {
             // this.state.exportVote.push([c.name, c.name_ex, c,phone, c.birthday])
             return (
                 <>
-                    <h5 style={{ marginTop: 10 }}>{c.name}{c.name_ex}님 - 총 {this.state.totalVote}표 중, {c.votes}표 득표</h5>
+                    <h5 style={{ marginTop: 10 }}>{c.name}님 - 총 {this.state.totalVote}표 중, {c.votes}표 득표</h5>
                     {result >= 50 ?
                         <ProgressBar striped variant="info" now={result} label={`${result}%`} />
                         : <ProgressBar striped variant="warning" now={result} label={`${result}%`} />
@@ -106,7 +106,7 @@ export default class ResultDetail extends Component {
 
         let dataSet = [
             {
-                columns: ["name", "name_ex", "phone", "birthday"],
+                columns: ["name", "phone", "birthday"],
                 data: this.state.exportVote,
             }
         ]

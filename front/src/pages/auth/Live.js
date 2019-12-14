@@ -50,7 +50,7 @@ export default class Live extends Component {
                 .then(json => {
                     this.setState({ authStatus: json.status })
                     this.state.authStatus
-                        ? window.location.assign(`/voting/${this.state.voteId}`)
+                        ? window.location.assign(`/voting/${this.state.voteId}/1`)
                         : confirmAlert({
                             customUI: () => {
                                 return (
@@ -59,6 +59,9 @@ export default class Live extends Component {
                             },
                             closeOnClickOutside: false
                         })
+                    
+                    window.sessionStorage.setItem('name', name)
+                    window.sessionStorage.setItem('status', status)
                 })
                 .catch(err => {
                     console.log(err)

@@ -2,7 +2,7 @@ require('../db-connection');
 const mongoose = require('mongoose');
 
 const candidateSchema = mongoose.Schema({
-    id      : mongoose.Schema.Types.ObjectId,
+    _id     : mongoose.Schema.Types.ObjectId,
     phone   : { type: String, required: true, trim: true },
     name    : String,
     birth   : Date,

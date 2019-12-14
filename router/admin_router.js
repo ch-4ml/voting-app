@@ -1,6 +1,4 @@
 const express = require('express');
-const session = require('express-session');
-const FileStore = require('session-file-store')(session);
 const adminRouter = express.Router();
 const voteModel = require('../model/vote_model');
 const timeModule = require('../modules/time');
@@ -8,32 +6,26 @@ const candidateModel = require('../model/candidate_model');
 const electorateModel = require('../model/electorate_model')
 const adminModel = require('../model/admin_model');
 
-adminRouter.use(session({
-    secret: 'keyboard cat',
-    resave: false,
-    saveUninitialized: true,
-    store: new FileStore()
-}));
-
 // 새로운 선거 등록
 adminRouter.post('/admin/vote', async (req, res) => {
     let data;
     const vote = {
         title: req.body.title,
-        begin_date: req.body.begin_date,
-        end_date: req.body.end_date,
+        context: req.body.context,
+        begin: req.body.begin_date,
+        end: req.body.end_date,
         limit: req.body.limit
     };
     try {
         let result = await voteModel.create(vote);
-        let index = result[0]['insertId'];
-        timeModule.registerTimer(index, vote.begin_date);
-        timeModule.registerTimer(index, vote.end_date);
+        let index = result._id;
+        timeModule.registerTimer(index, vote.begin);
+        timeModule.registerTimer(index, vote.end);
         data = { result: true, msg: '선거 등록 성공', data: index };
         res.status(200).send(data);
     } catch (err) {
         data = { result: false, msg: '선거 등록 실패' };
-        console.log(data)
+        console.log(`선거 등록 오류: ${err}`);
         res.status(500).send(data);
     }
 });
@@ -41,21 +33,23 @@ adminRouter.post('/admin/vote', async (req, res) => {
 // 새로운 후보자 등록
 adminRouter.post('/admin/candidate', async (req, res) => {
     let data;
-    let candidatesList = JSON.parse(req.body.candidates);
-    let candidates = new Array();
+    const _id = req.body.vote_id;
+    const type = req.body.type;
+    const candidatesList = JSON.parse(req.body.candidates);
+    const candidates = new Array();
     for (var i = 1; i < candidatesList.length; i++) {
-        let candidate = {
-            vote_id: req.body.vote_id,
-            name: candidatesList[i][0],
-            name_ex: candidatesList[i][1],
-            phone: candidatesList[i][2]
+        const candidate = {
+            name: candidatesList[i][0] + candidatesList[i][1],
+            phone: candidatesList[i][2],
+            detail: candidatesList[i][3]
         };
         candidates.push(candidate);
     }
     console.log(candidates);
     try {
-        await candidateModel.create(candidates);
-        data = { result: true, msg: '후보자 등록 성공' };
+        const candidatesIdObjArray = await candidateModel.create(_id, candidates);
+        const result = await voteModel.updateCandidates(_id, type, candidatesIdObjArray);
+        data = { result: true, msg: result };
         res.status(200).send(data);
     } catch (err) {
         data = { result: false, msg: '후보자 등록 실패' };
@@ -66,24 +60,25 @@ adminRouter.post('/admin/candidate', async (req, res) => {
 // 새로운 선거권자 등록
 adminRouter.post('/admin/electorate', async (req, res) => {
     let data;
-    let electoratesList = JSON.parse(req.body.electorates);
-    let electorates = new Array();
+    const _id = req.body.vote_id; 
+    const electoratesList = JSON.parse(req.body.electorates);
+    const electorates = new Array();
     for (var i = 1; i < electoratesList.length; i++) {
-        let electorate = {
-            vote_id: req.body.vote_id,
-            name: electoratesList[i][0],
-            name_ex: electoratesList[i][1],
-            phone: electoratesList[i][2]
+        const electorate = {
+            name: electoratesList[i][0] + electoratesList[i][1],
+            phone: electoratesList[i][2],
+            birth: electoratesList[i][3]
         };
         electorates.push(electorate);
     }
     console.log(electorates);
     try {
-        await electorateModel.create(electorates);
-        data = { result: true, msg: '후보자 등록 성공' };
+        const electorateIdObjArray = await electorateModel.create(_id, electorates);
+        const result = await voteModel.updateElectorates(_id, electorateIdObjArray);
+        data = { result: true, msg: result };
         res.status(200).send(data);
     } catch (err) {
-        data = { result: false, msg: '후보자 등록 실패' };
+        data = { result: false, msg: '선거권자 등록 실패' };
         res.status(500).send(data);
     }
 });
@@ -93,9 +88,9 @@ adminRouter.delete('/delete', async (req, res) => {
     let data;
     let voteId = req.body.voteId;
     try {
-        await voteModel.delete(voteId);
         await candidateModel.delete(voteId);
         await electorateModel.delete(voteId);
+        await voteModel.delete(voteId);
         data = { result: true, msg: '선거 삭제 성공' };
         res.status(200).send(data);
     } catch (err) {
@@ -109,15 +104,12 @@ adminRouter.delete('/delete', async (req, res) => {
 adminRouter.post('/admin/auth', async (req, res) => {
     // 관리자로 로그인 되었는지 확인
     let data;
+    const _id = req.body.vote_id;
+    const name = req.body.name + req.body.name_ex;
     if (req.session.admin) {
-        let electorate = {
-            vote_id: req.body.vote_id,
-            name: req.body.name,
-            name_ex: req.body.name_ex
-        };
         try {
-            let e = await electorateModel.select(electorate);
-            let auth = await electorateModel.updateAuth(e[0][0].id);
+            let e = await electorateModel.select(_id, name);
+            let auth = await electorateModel.updateAuth(e._id);
             data = { result: true, msg: '인증번호 생성 성공', data: auth };
             res.status(200).send(data);
         } catch (err) {
@@ -134,15 +126,13 @@ adminRouter.post('/admin/auth', async (req, res) => {
 adminRouter.post('/admin', async (req, res) => {
     let data;
     let admin = {
-        uid: req.body.uid,
-        password: req.body.password,
+        pw: req.body.password,
         name: req.body.name,
-        name_ex: req.body.name_ex,
         phone: req.body.phone
     };
     try {
         await adminModel.create(admin);
-        data = { result: true, msg: `${admin} 관리자 계정 생성 성공` };
+        data = { result: true, msg: `${admin.name} 관리자 계정 생성 성공` };
         res.status(200).send(data);
     } catch (err) {
         data = { result: false, msg: '관리자 계정 생성 실패' };
@@ -154,14 +144,14 @@ adminRouter.post('/admin', async (req, res) => {
 adminRouter.post('/login', async (req, res) => {
     let data;
     let admin = {
-        uid: req.body.uid,
-        password: req.body.password
+        phone: req.body.phone,
+        pw: req.body.password
     };
     try {
         let result = await adminModel.select(admin);
         req.session.admin = {
-            ...admin,
-            name: result[0][0].name + result[0][0].name_ex
+            ...result,
+            pw: `********`
         };
         data = { result: true, msg: '로그인 성공', data: req.session };
         res.status(200).send(data);

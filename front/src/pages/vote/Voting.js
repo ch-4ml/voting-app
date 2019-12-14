@@ -12,6 +12,7 @@ export default class Voting extends Component {
         super(props)
         this.state = {
             voteId: this.props.match.params.voteId,
+            type: this.props.match.params.type,
             vote: [], // 선거 정보 가져옴
             candidate: [], // 후보자 정보 가져옴
             ingLimit: 0, // 선택한 후보자 수
@@ -26,6 +27,22 @@ export default class Voting extends Component {
 
     componentDidMount() {
         this._isMounted = true
+
+        if (this.state.type === 1) {
+            switch (window.sessionStorage.getItem('status')) {
+                case 0:
+                    break;
+                case 1:
+                    window.location.assign(`/voting/${this.state.voteId}/2`)
+                    break;
+                case 2:
+                    window.location.assign(`/voting/${this.state.voteId}/3`)
+                    break;
+                default:
+                    window.location.assign('/')
+                    break;
+            }
+        }
 
         try {
             this.voteApi()
@@ -42,7 +59,8 @@ export default class Voting extends Component {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    'vote_id': this.state.voteId
+                    'vote_id': this.state.voteId,
+                    'type': this.state.type
                 })
             })
                 .then(result => result.json())
@@ -51,7 +69,8 @@ export default class Voting extends Component {
                     // 원래 this.state.candidate.map 이었음
                     this.state.candidate.foreach((c) => {
                         this.setState({
-                            canList: update(this.state.canList, { $push: [c.name + c.name_ex] }),
+                            // canList: update(this.state.canList, { $push: [c.name + c.name_ex] }),
+                            canList: update(this.state.canList, { $push: [c.name] }),
                             canIdArray: update(this.state.canIdArray, { $push: [c.id] })
                         })
                     })
@@ -65,7 +84,7 @@ export default class Voting extends Component {
     }
 
     voteSubmit = async e => {
-         // 원래 this.state.canArray.map 이었음
+        // 원래 this.state.canArray.map 이었음
         this.state.canArray.foreach((c) => {
             if (c !== null) {
                 let ca = this.state.canIdArray[c]
@@ -84,6 +103,7 @@ export default class Voting extends Component {
                     },
                     body: JSON.stringify({
                         'vote_id': this.state.voteId,
+                        'type': this.state.type,
                         'candidates': this.state.canNewArray
                     })
                 })
@@ -109,7 +129,16 @@ export default class Voting extends Component {
                 canNewArray: update(this.state.canNewArray, { $splice: [[0, this.state.canNewArray.length]] })
             })
 
-            window.location.assign('/')
+            this.state.type === 3
+                ? (
+                    window.sessionStorage.setItem('status', 3),
+                    window.location.assign('/')
+                )
+                : (
+                    window.sessionStorage.setItem('status', this.state.type),
+                    this.setState({ type: type + 1 }),
+                    window.location.assign(`/voting/${this.state.voteId}/${this.state.type}`)
+                )
         } else {
             confirmAlert({
                 customUI: ({ onClose }) => {
@@ -130,7 +159,7 @@ export default class Voting extends Component {
             indexId = selected[0]
         }
         try {
-             // 원래 this.state.canArray.map 이었음
+            // 원래 this.state.canArray.map 이었음
             this.state.canArray.foreach((elem, index) => {
                 if (elem === indexId) {
                     this.state.ingLimit -= 1
