@@ -1,5 +1,6 @@
 // Import modules
 const express = require('express');
+const session = express.session();
 const bodyParser = require('body-parser');
 const cors = require('cors'); // cross domain issue
 const timeModule = require('./modules/time');
@@ -21,6 +22,11 @@ app.use(express.static('views'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors(corsOptions));
+app.use(session({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: true
+}));
 
 // Router
 const router = require('./router/router');

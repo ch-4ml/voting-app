@@ -1,6 +1,4 @@
 const express = require('express');
-// const session = require('express-session');
-// const FileStore = require('session-file-store')(session);
 const userRouter = express.Router();
 const voteModel = require('../model/vote_model');
 const electorateModel = require('../model/electorate_model');
@@ -13,41 +11,32 @@ moment.tz.setDefault('Asia/Seoul');
 userRouter.get('/list/:status', async (req, res) => {
     let data;
     try {
-        let result = await voteModel.selectAll(req.params.status);
-        data = {
-            result: true,
-            msg: '선거 목록 조회 성공',
-            data: result[0]
-        }
+        const result = await voteModel.selectAll(req.params.status);
+        data = { result: true, msg: '선거 목록 조회 성공', data: result };
         res.status(200).send(data);
     } catch (err) {
-        data = {
-            result: false,
-            msg: `선거 목록 조회 실패: ${err}`
-        }
+        data = { result: false, msg: `선거 목록 조회 실패: ${err}` };
         res.status(500).send(data);
     }
 });
 
-// 진행 중인 선거 선택
+// 진행 중인 선거 선택했을 때
 userRouter.post('/vote', async (req, res) => {
     let data;
-    let voteId = req.body.vote_id;
+    const voteId = req.body.vote_id;
+    const type = req.body.type;
     try {
-        let voteResult = await voteModel.select(voteId);
-        let candidateResult = await candidateModel.select(voteId);
+        const voteResult = await voteModel.select(voteId);
+        const candidateResult = await candidateModel.select(voteId, type);
         data = {
             result: true,
-            msg: '선거 선택 조회 성공',
-            voteData: voteResult[0][0],
-            candidateData: candidateResult[0],
+            msg: '진행 중인 선거 조회 성공',
+            voteData: voteResult,
+            candidateData: candidateResult,
         }
         res.status(200).send(data);
     } catch (err) {
-        data = {
-            result: false,
-            msg: `선거 선택 조회 실패: ${err}`,
-        }
+        data = { result: false, msg: `진행 중인 선거 조회 실패: ${err}` };
         res.status(500).send(data);
     }
 });
@@ -55,27 +44,19 @@ userRouter.post('/vote', async (req, res) => {
 // 완료된 선거 선택
 userRouter.post('/finvote', async (req, res) => {
     let data;
-    let totalVote = 0;
-    let voteId = req.body.vote_id;
+    const voteId = req.body.vote_id;
     try {
         let voteResult = await voteModel.select(voteId);
-        let candidateResult = await candidateModel.selectResult(voteId);
-        for(var i = 0; i < candidateResult[0].length; i++) {
-            totalVote += candidateResult[0][i].votes;
-        }
+        let candidateResult = await candidateModel.result(voteId);
         data = {
             result: true,
-            msg: '선거 선택 조회 성공',
-            voteData: voteResult[0][0],
-            candidateData: candidateResult[0],
-            totalVote: totalVote,
+            msg: '완료된 선거 조회 성공',
+            voteData: voteResult,
+            candidateData: candidateResult,
         }
         res.status(200).send(data);
     } catch (err) {
-        data = {
-            result: false,
-            msg: `선거 선택 조회 실패: ${err}`,
-        }
+        data = { result: false, msg: `완료된 선거 조회 실패: ${err}` };
         res.status(500).send(data);
     }
 });
@@ -83,25 +64,24 @@ userRouter.post('/finvote', async (req, res) => {
 // 선거권자 인증
 userRouter.post('/electorate', async (req, res) => {
     let data;
-    const electorate = {
-        vote_id: req.body.vote_id,
-        name: req.body.name,
-        name_ex: req.body.name_ex,
-    };
+    const vote_id = req.body.vote_id;
+    const name = req.body.name + req.body.name_ex;
     const auth = req.body.auth;
     try {
-        let result = await electorateModel.select(electorate);
-        if (result[0].length > 0) {
-            if (result[0][0].auth != auth) { // 인증번호가 일치하지 않는 경우
+        const result = await electorateModel.select(vote_id, name);
+        if (result) {
+            if (result.auth !== parseInt(auth)) { // 인증번호가 일치하지 않는 경우
                 // 인증번호 불일치
                 console.log('인증번호 불일치');
                 data = { status: false, msg: '인증번호 불일치.' };
-            } else if (result[0][0].vote_time != null) { // 이미 투표한 경우
+            } else if (result.completed) { // 이미 투표한 경우
                 console.log('이미 투표함');
                 data = { status: false, msg: '이미 투표함.' };
             } else {
                 console.log('인증 성공');
-                data = { status: true, msg: '인증 성공.' }
+                req.session.electorate = { ...result, auth: '********' };
+                console.log(req.session.electorate);
+                data = { status: true, msg: '인증 성공.', session: req.session.electorate }
             }
         } else { // 데이터 없음
             data = { status: false, msg: '일치하는 데이터 없음.' }
@@ -116,20 +96,17 @@ userRouter.post('/electorate', async (req, res) => {
 // 휴대폰 번호로 인증번호 조회
 userRouter.post('/auth', async (req, res) => {
     let data;
-    const user = {
-        vote_id: req.body.vote_id,
-        name: req.body.name,
-        name_ex: req.body.name_ex,
-    };
+    const vote_id = req.body.vote_id;
+    const name = req.body.name + req.body.name_ex;
     const phone = req.body.phone;
     try {
-        let result = await electorateModel.select(user);
+        let result = await electorateModel.select(vote_id, name);
         let a_phone = new Array(); // 폰 번호 배열 
         a_phone.push(phone);
-        console.log(result[0][0]);
-        if(result[0][0] != null) {
-            if (phone == result[0][0].phone) {
-                let auth = await electorateModel.updateAuth(result[0][0].id);
+        console.log(result);
+        if(result != null) {
+            if (phone === result.phone) {
+                let auth = await electorateModel.updateAuth(result._id);
                 console.log(auth);
                 // 생성된 인증번호를 휴대폰으로 전송
                 let config = {
@@ -171,17 +148,18 @@ userRouter.put('/vote', async (req, res) => {
     let data;
     // 회원이 선택한 후보자 목록 받아와서 득표수 올려줌
     const voteId = req.body.vote_id;
-    const candidates = req.body.candidates;
+    const type = req.body.type;
+    const candidatesIdArray = req.body.candidates;
     try {
         let result = await voteModel.select(voteId);
-        let end_date = result[0][0].end_date;
-        if (moment(end_date).isSameOrBefore(moment(), 'second')) {
+        let end = result.end;
+        if (moment(end).isSameOrBefore(moment(), 'second')) {
             console.log('시간오류');
             data = { result: false, msg: '투표 종료 시간 경과' };
             res.status(500).send(data);
         } else {
             console.log('투표 가능');
-            await candidateModel.updateVotes(candidates, voteId);
+            await candidateModel.updateVotes(voteId, candidatesIdArray, type);
             data = { result: true, msg: '투표 성공' };
             res.status(200).send(data);
         }
