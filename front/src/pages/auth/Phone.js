@@ -62,6 +62,9 @@ export default class Phone extends Component {
                             },
                             closeOnClickOutside: false
                         })
+                    
+                    window.sessionStorage.setItem('name', name)
+                    window.sessionStorage.setItem('status', status)
                 })
                 .catch(err => {
                     console.log(err)
@@ -102,7 +105,7 @@ export default class Phone extends Component {
         }
 
         auth === getAuth
-            ? window.location.assign(`/voting/${this.state.voteId}`)
+            ? window.location.assign(`/voting/${this.state.voteId}/1`)
             : confirmAlert({
                 customUI: ({ onClose }) => {
                     return (
