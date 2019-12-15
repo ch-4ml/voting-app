@@ -1,7 +1,7 @@
 const Candidate = require('./schema/candidate');
 const Vote = require('./schema/vote');
 
-class Candidate {
+class CandidateModel {
     // 후보자 추가
     create(_id, candidates) { // 선거 id, 후보자 목록
         return new Promise(async (resolve, reject) => {
@@ -56,8 +56,13 @@ class Candidate {
         return new Promise(async (resolve, reject) => {
             try {
                 const result = await Vote.findById(_id).select(`-_id candidates${type}`);
-                result.forEach(e => {
-                    await Candidate.deleteOne({ _id: e._id });
+                result.forEach(async e => {
+                    try {
+                        await Candidate.deleteOne({ _id: e._id });
+                    } catch(err) {
+                        console.log(`후보자 삭제 오류: ${err}`);
+                        reject('후보자 삭제 실패');
+                    }
                 });
                 let text = "";
                 switch(type) {
@@ -86,4 +91,4 @@ class Candidate {
     }
 }
 
-module.exports = new Candidate();
+module.exports = new CandidateModel();

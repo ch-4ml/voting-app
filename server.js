@@ -1,6 +1,6 @@
 // Import modules
 const express = require('express');
-const session = express.session();
+const session = require('express-session');
 const bodyParser = require('body-parser');
 const cors = require('cors'); // cross domain issue
 const timeModule = require('./modules/time');

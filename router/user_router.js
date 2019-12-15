@@ -69,17 +69,18 @@ userRouter.post('/electorate', async (req, res) => {
     const auth = req.body.auth;
     try {
         const result = await electorateModel.select(vote_id, name);
-        if (result) {
-            if (result.auth !== parseInt(auth)) { // 인증번호가 일치하지 않는 경우
+        const electorate = result[0]._doc;
+        if (electorate) {
+            if (electorate.auth !== parseInt(auth)) { // 인증번호가 일치하지 않는 경우
                 // 인증번호 불일치
                 console.log('인증번호 불일치');
                 data = { status: false, msg: '인증번호 불일치.' };
-            } else if (result.completed) { // 이미 투표한 경우
+            } else if (electorate.completed) { // 이미 투표한 경우
                 console.log('이미 투표함');
                 data = { status: false, msg: '이미 투표함.' };
             } else {
                 console.log('인증 성공');
-                req.session.electorate = { ...result, auth: '********' };
+                req.session.electorate = { ...electorate, auth: '********' };
                 console.log(req.session.electorate);
                 data = { status: true, msg: '인증 성공.', session: req.session.electorate }
             }
@@ -103,10 +104,11 @@ userRouter.post('/auth', async (req, res) => {
         let result = await electorateModel.select(vote_id, name);
         let a_phone = new Array(); // 폰 번호 배열 
         a_phone.push(phone);
-        console.log(result);
-        if(result != null) {
-            if (phone === result.phone) {
-                let auth = await electorateModel.updateAuth(result._id);
+        console.log(result[0]); // resolve로 받을 때 다시 배열로 묶임
+        const electorate = result[0];
+        if(electorate) {
+            if (phone === electorate.phone) {
+                let auth = await electorateModel.updateAuth(electorate._id);
                 console.log(auth);
                 // 생성된 인증번호를 휴대폰으로 전송
                 let config = {
@@ -121,7 +123,7 @@ userRouter.post('/auth', async (req, res) => {
                         'type': 'SMS',
                         'from': process.env.SENS_SENDNUMBER,
                         'to': a_phone,
-                        'content': `[높은 뜻 정의교회]${user.name}님. ${user.vote_id}번 선거 인증번호는 [${auth}] 입니다.`
+                        'content': `[높은 뜻 정의교회]${electorate.name}님. 인증번호는 [${auth}] 입니다.`
                     }
                 };
                 let response = await request(config);
@@ -147,11 +149,12 @@ userRouter.post('/auth', async (req, res) => {
 userRouter.put('/vote', async (req, res) => {
     let data;
     // 회원이 선택한 후보자 목록 받아와서 득표수 올려줌
-    const voteId = req.body.vote_id;
+    const vid = req.body.vote_id;
+    const eid = req.session.electorate._id;
     const type = req.body.type;
     const candidatesIdArray = req.body.candidates;
     try {
-        let result = await voteModel.select(voteId);
+        let result = await voteModel.select(vid);
         let end = result.end;
         if (moment(end).isSameOrBefore(moment(), 'second')) {
             console.log('시간오류');
@@ -159,7 +162,9 @@ userRouter.put('/vote', async (req, res) => {
             res.status(500).send(data);
         } else {
             console.log('투표 가능');
-            await candidateModel.updateVotes(voteId, candidatesIdArray, type);
+            // candidateModel.updateVotes(vid, candidatesIdArray, type) 라고 되어있었읍니다
+            const result = await voteModel.vote(vid, eid, type, candidatesIdArray);
+            req.session.electorate = { ...result.eResult, auth: '********' }
             data = { result: true, msg: '투표 성공' };
             res.status(200).send(data);
         }

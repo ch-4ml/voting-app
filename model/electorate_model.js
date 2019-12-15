@@ -24,9 +24,9 @@ class ElectorateModel {
     select(_id, name) { // 선거 id, 선거권자 name
         return new Promise(async (resolve, reject) => {
             try {
-                const result = await Vote.find({ _id }).populate({ path: 'electorates', match: { name } }).exec();
-                console.log(`Electorates select result: ${result}`);
-                resolve(result);
+                const result = await Vote.find({ _id }).populate({ path: 'electorates', match: { name: name } }).exec();
+                console.log(`Electorates select result: ${result[0].electorates}`);
+                resolve(result[0].electorates);
             } catch (err) {
                 console.log(`선거권자 조회 오류: ${err}`);
                 reject("선거권자 조회 실패");
@@ -39,10 +39,12 @@ class ElectorateModel {
         let auth = this.authGenerator(Math.floor(Math.random() * 10000), 4);
         return new Promise(async (resolve, reject) => {
             try {
-                await Electorate.updateOne({ _id }, { $set: { auth } });
+                await Electorate.updateOne( { _id: _id }, { $set: { auth: auth } });
+                console.log(`인증번호 생성 성공`);
                 resolve(auth);
             } catch(err) {
-                reject(err);
+                console.log(`인증번호 생성 오류: ${err}`);
+                reject(`인증번호 생성 실패`);
             }
         });
     }
@@ -72,8 +74,13 @@ class ElectorateModel {
         return new Promise(async (resolve, reject) => {
             try {
                 const result = await Vote.findById(_id).select('-_id electorates');
-                result.forEach(e => {
-                    await Electorate.deleteOne({ _id: e._id });
+                result.forEach(async e => {
+                    try {
+                        await Electorate.deleteOne({ _id: e._id });
+                    } catch(err) {
+                        console.log(`선거권자 삭제 오류: ${err}`);
+                        reject('선거권자 삭제 실패');
+                    }
                 });
                 await Vote.update({ _id }, { $unset: { electorates: 1 } });
                 resolve(`선거권자 삭제 성공`);
