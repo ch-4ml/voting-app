@@ -9,6 +9,7 @@ import moment from 'moment'
 
 import { Alert } from '../../components/Alert'
 import { VoteForm } from '../../components/Form'
+import { BlockButton } from '../../components/Button'
 
 export default class Create extends Component {
     constructor(props) {
@@ -123,7 +124,7 @@ export default class Create extends Component {
     handleCreateVoteCandidate1Submit = async e => {
         e.preventDefault()
 
-        const { vote_id, candidateList1, type } = this.state
+        const { vote_id, candidateList1 } = this.state
 
         await fetch('/admin/candidate', {
             method: 'POST',
@@ -149,7 +150,7 @@ export default class Create extends Component {
     handleCreateVoteCandidate2Submit = async e => {
         e.preventDefault()
 
-        const { vote_id, candidateList2, type } = this.state
+        const { vote_id, candidateList2 } = this.state
 
         await fetch('/admin/candidate', {
             method: 'POST',
@@ -203,17 +204,39 @@ export default class Create extends Component {
 
         const { vote_id, electorateList } = this.state
 
-        await fetch('/admin/electorate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                'vote_id': vote_id,
-                'electorates': electorateList
+        // electorateList는 2차원 배열 형태의 문자열임
+        console.log(`electorateList의 자료형은 뭘까~요? ${typeof(electorateList)}`); // string
+        // 그래서 객체로 먼저 말아봄
+        console.log(`electorateList를 객체로 만든 자료형은 뭘까~요? ${typeof({electorates: electorateList})}`); // object
+        // 밑에서 JSON.stringify로 날렸길래 바꿔볼게요~
+        console.log(`JSON.stringify({electorates: electorateList})의 자료형은? ${typeof(JSON.stringify({electorates: electorateList}))}`); // string
+        // 어떻게 달라졌을까?
+        console.log(`JSON.stringify({electorates: electorateList}): ${JSON.stringify({electorates: electorateList})}`); // 이스케이프 문자로 따옴표 붙음
+        // 배열 추출이 될까?
+        console.log(`배열 추출 : ${JSON.stringify({electorates: electorateList}).electorates}`); // undefined
+        // JSON으로 parsing하면?
+        console.log(`JSON Parsing: ${JSON.parse(JSON.stringify({electorates: electorateList})).electorates}`); // 잘 나옴
+        // parse 했으니까 추출 될까??
+        console.log(`JSON Parsing: ${JSON.parse(JSON.stringify({electorates: electorateList})).electorates[1]}`); // 응 안돼 [ 나와 
+        // 결론: 2차원 배열 형태의 문자열을 잘라서 진짜 2차원 배열로 만들어야 함
+
+        console.log(`object type electorateList length: ${Object.keys(electorateList).length}`)
+
+        // 대체 POST할때 어떤 일이 발생하길래 저 밑에건 되는지 모르겠네
+        try {
+            await fetch('/admin/electorate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    'vote_id': vote_id,
+                    'electorates': electorateList
+                })
             })
-        })
-        window.location.assign('/')
+        } catch (err) {
+            console.log(err)
+        }
     }
 
     handleScrollToStats = () => {
@@ -279,10 +302,16 @@ export default class Create extends Component {
                 this.setState({
                     eleDataLoaded: true,
                     eleCols: resp.cols,
-                    eleRows: resp.rows
+                    eleRows: resp.rows.slice(1, resp.rows.length)
                 })
             }
-            this.setState({ electorateList: JSON.stringify(resp.rows) })
+            console.log(resp.rows.slice(1, resp.rows.length))
+            console.log(JSON.stringify(resp.rows))
+            // console.log(JSON.parse(resp.rows))
+            console.log(typeof(resp.rows))
+            console.log(resp.rows[0])
+            console.log(Object.keys(resp.rows).length)
+            this.setState({ electorateList: resp.rows })
         })
     }
 
@@ -398,6 +427,10 @@ export default class Create extends Component {
         return response.json()
     }
 
+    submitBtn = () => {
+        window.location.assign('/')
+    }
+
     render() {
         return (
             <div style={{ marginTop: 25, padding: 15 }}>
@@ -431,10 +464,10 @@ export default class Create extends Component {
                 </Form>
                 <VoteForm
                     onSubmit={this.handleCreateVoteCandidate1Submit}
-                    title='후보자1 파일 등록'
+                    title='장로 피선거권자 파일 등록'
                     onClick={this.openCan1FileBrowser}
                     disabled={this.candidateList1}
-                    label='후보자1 파일 등록'
+                    label='장로 파일 등록'
                     onChange={this.fileCandidate1Handler}
                     refs={this.fileCan1Input}
                     value={this.state.uploadedCan1FileName}
@@ -444,10 +477,10 @@ export default class Create extends Component {
                     subBtn={this.state.isCandidate1Submit} />
                 <VoteForm
                     onSubmit={this.handleCreateVoteCandidate2Submit}
-                    title='후보자2 파일 등록'
+                    title='안수집사 피선거권자 파일 등록'
                     onClick={this.openCan2FileBrowser}
                     disabled={this.candidateList2}
-                    label='후보자2 파일 등록'
+                    label='안수집사 파일 등록'
                     onChange={this.fileCandidate2Handler}
                     refs={this.fileCan2Input}
                     value={this.state.uploadedCan2FileName}
@@ -457,10 +490,10 @@ export default class Create extends Component {
                     subBtn={this.state.isCandidate2Submit} />
                 <VoteForm
                     onSubmit={this.handleCreateVoteCandidate3Submit}
-                    title='후보자3 파일 등록'
+                    title='권사 피선거권자 파일 등록'
                     onClick={this.openCan3FileBrowser}
                     disabled={this.candidateList3}
-                    label='후보자3 파일 등록'
+                    label='권사 파일 등록'
                     onChange={this.fileCandidate3Handler}
                     refs={this.fileCan3Input}
                     value={this.state.uploadedCan3FileName}
@@ -479,6 +512,7 @@ export default class Create extends Component {
                     dataLoaded={this.state.eleDataLoaded}
                     data={this.state.eleRows}
                     columns={this.state.eleCols} />
+                <BlockButton label='선거 등록' click={this.submitBtn} />
             </div>
         )
     }

@@ -67,14 +67,25 @@ export default class SignUp extends Component {
             })
         } else {
             try {
-                await fetch('/admin', {
+                const response = await fetch('/admin', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(signInfo),
                 })
-                window.location.assign('/')
+                const res = await response.json()
+
+                res.result
+                    ? window.location.assign('/')
+                    : confirmAlert({
+                        customUI: () => {
+                            return (
+                                <Alert content='회원가입에 실패하였습니다.' label='확인' href='/signin' />
+                            )
+                        },
+                        closeOnClickOutside: false
+                    })
             } catch (err) {
                 console.log(err)
             }

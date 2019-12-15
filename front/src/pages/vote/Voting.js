@@ -28,20 +28,8 @@ export default class Voting extends Component {
     componentDidMount() {
         this._isMounted = true
 
-        if (this.state.type === 1) {
-            switch (window.sessionStorage.getItem('status')) {
-                case 0:
-                    break;
-                case 1:
-                    window.location.assign(`/voting/${this.state.voteId}/2`)
-                    break;
-                case 2:
-                    window.location.assign(`/voting/${this.state.voteId}/3`)
-                    break;
-                default:
-                    window.location.assign('/')
-                    break;
-            }
+        if (this.state.type > 3) {
+            window.location.assign('/')
         }
 
         try {
@@ -65,13 +53,26 @@ export default class Voting extends Component {
             })
                 .then(result => result.json())
                 .then(json => {
-                    this.setState({ vote: json.voteData, candidate: json.candidateData })
+                    console.log(json.candidateData[0].candidates1)
+                    switch (this.state.type) {
+                        case '1':
+                            this.setState({ vote: json.voteData, candidate: json.candidateData[0].candidates1 })
+                            break;
+                        case '2':
+                            this.setState({ vote: json.voteData, candidate: json.candidateData[0].candidates2 })
+                            break;
+                        case '3':
+                            this.setState({ vote: json.voteData, candidate: json.candidateData[0].candidates3 })
+                            break;
+                        default:
+                            break;
+                    }
+
                     // 원래 this.state.candidate.map 이었음
-                    this.state.candidate.foreach((c) => {
+                    this.state.candidate.forEach((c) => {
                         this.setState({
-                            // canList: update(this.state.canList, { $push: [c.name + c.name_ex] }),
                             canList: update(this.state.canList, { $push: [c.name] }),
-                            canIdArray: update(this.state.canIdArray, { $push: [c.id] })
+                            canIdArray: update(this.state.canIdArray, { $push: [c._id] })
                         })
                     })
                 })
@@ -85,7 +86,7 @@ export default class Voting extends Component {
 
     voteSubmit = async e => {
         // 원래 this.state.canArray.map 이었음
-        this.state.canArray.foreach((c) => {
+        this.state.canArray.forEach((c) => {
             if (c !== null) {
                 let ca = this.state.canIdArray[c]
                 this.state.canNewArray.push(ca)
@@ -121,6 +122,39 @@ export default class Voting extends Component {
                     .catch(err => {
                         console.log(err)
                     })
+
+                    window.sessionStorage.setItem('status', this.state.type)
+
+                    switch(this.state.type) {
+                        case '1':
+                            this.setState({ type: parseInt(this.state.type) + 1 })
+                            window.location.assign(`/voting/${this.state.voteId}/${this.state.type}`)
+                            break;
+                        case '2':
+                            this.setState({ type: parseInt(this.state.type) + 1 })
+                            window.location.assign(`/voting/${this.state.voteId}/${this.state.type}`)
+                            break;
+                        case '3':
+                            confirmAlert({
+                                customUI: () => {
+                                    return (
+                                        <Alert content='투표가 완료되었습니다.' label='확인' href='/' />
+                                    )
+                                },
+                                closeOnClickOutside: false
+                            })
+                            break;
+                        default:
+                            confirmAlert({
+                                customUI: () => {
+                                    return (
+                                        <Alert content='잘못된 접근입니다.' label='확인' href='/' />
+                                    )
+                                },
+                                closeOnClickOutside: false
+                            })
+                            break;
+                    }
             } catch (err) {
                 console.log(err)
             }
@@ -128,17 +162,6 @@ export default class Voting extends Component {
             this.setState({
                 canNewArray: update(this.state.canNewArray, { $splice: [[0, this.state.canNewArray.length]] })
             })
-
-            this.state.type === 3
-                ? (
-                    window.sessionStorage.setItem('status', 3),
-                    window.location.assign('/')
-                )
-                : (
-                    window.sessionStorage.setItem('status', this.state.type),
-                    this.setState({ type: type + 1 }),
-                    window.location.assign(`/voting/${this.state.voteId}/${this.state.type}`)
-                )
         } else {
             confirmAlert({
                 customUI: ({ onClose }) => {
@@ -160,7 +183,7 @@ export default class Voting extends Component {
         }
         try {
             // 원래 this.state.canArray.map 이었음
-            this.state.canArray.foreach((elem, index) => {
+            this.state.canArray.forEach((elem, index) => {
                 if (elem === indexId) {
                     this.state.ingLimit -= 1
                     this.state.status = true
@@ -201,9 +224,9 @@ export default class Voting extends Component {
 
         return (
             <div style={{ margin: 25 }}>
-                <h3>{this.state.vote.title}</h3>
+                <h3>{this.state.type}번째 {this.state.vote.title}</h3>
                 <h4 style={{ margin: 10 }}>선택한 후보자 : {this.state.ingLimit}명 / {this.state.vote.limit}명</h4>
-                <h4 style={{ margin: 10 }}>현재 선택하신 후보자는 {this.state.canNewArray} 입니다.</h4>
+                <h4 style={{ margin: 10 }}>현재 선택하신 후보자: {this.state.canNewArray}</h4>
                 {canNameList}
                 <div className='card' style={{ padding: '5px', backgroundColor: '#fafafa' }}>
                     <List

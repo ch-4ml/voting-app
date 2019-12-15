@@ -59,7 +59,7 @@ export default class Admin extends Component {
             })
                 .then(result => result.json())
                 .then(json => {
-                    (json.status === 500 || json.msg === '인증번호 생성 실패')
+                    !json.result
                     ? confirmAlert({
                         customUI: () => {
                             return (
@@ -69,6 +69,7 @@ export default class Admin extends Component {
                         closeOnClickOutside: false
                     })
                     : this.setState({ limit: json.data })
+                    console.log(json.data)
                 })
                 .catch(err => {
                     console.log(err)

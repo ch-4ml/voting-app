@@ -38,11 +38,11 @@ export default class Main extends Component {
                         {this.state.voteList.map(voteList => {
                             return (
                                 <VoteListItem
-                                    href={`/auth/${voteList.id}`}
-                                    key={`voteList-${voteList.id}`}
+                                    href={`/auth/${voteList._id}`}
+                                    key={`voteList-${voteList._id}`}
                                     title={voteList.title}
-                                    begin_date={voteList.begin_date}
-                                    end_date={voteList.end_date}
+                                    begin_date={voteList.begin}
+                                    end_date={voteList.end}
                                 />
                             )
                         })}

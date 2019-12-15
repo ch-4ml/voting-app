@@ -67,18 +67,20 @@ export default class ResultDetail extends Component {
             })
                 .then(result => result.json())
                 .then(json => {
-                    this.setState({ vote: json.voteData, candidate: json.candidateData, totalVote: json.totalVote })
+                    console.log(json.voteData)
+                    console.log(json.candidateData.candidates1[0].candidates1)
+                    this.setState({ vote: json.voteData, candidate: json.candidateData.candidates1[0].candidates1 })
 
-                    if (this.state.vote.status !== 2) {
-                        confirmAlert({
-                            customUI: () => {
-                                return (
-                                    <Alert content='완료된 선거의 결과만 볼 수 있습니다.' label='확인' href='/' />
-                                )
-                            },
-                            closeOnClickOutside: false
-                        })
-                    }
+                    // if (this.state.vote.status !== 2) {
+                    //     confirmAlert({
+                    //         customUI: () => {
+                    //             return (
+                    //                 <Alert content='완료된 선거의 결과만 볼 수 있습니다.' label='확인' href='/' />
+                    //             )
+                    //         },
+                    //         closeOnClickOutside: false
+                    //     })
+                    // }
                 })
                 .catch(err => {
                     console.log(err)
@@ -90,12 +92,11 @@ export default class ResultDetail extends Component {
 
     render() {
         let resultPg = this.state.candidate.map((c) => {
-            let result = ((c.votes / this.state.totalVote) * 100).toFixed(1)
-            result >= 50 && this.state.exportVote.push([c.name, c.name_ex, c.votes])
-            // this.state.exportVote.push([c.name, c.name_ex, c,phone, c.birthday])
+            let result = ((c.votes / this.state.vote.votes1) * 100).toFixed(1)
+            result >= 50 && this.state.exportVote.push([c.name, c.votes, result, c.phone])
             return (
                 <>
-                    <h5 style={{ marginTop: 10 }}>{c.name}님 - 총 {this.state.totalVote}표 중, {c.votes}표 득표</h5>
+                    <h5 style={{ marginTop: 10 }}>{c.name}님 - 총 {this.state.vote.votes1}표 중, {c.votes}표 득표</h5>
                     {result >= 50 ?
                         <ProgressBar striped variant="info" now={result} label={`${result}%`} />
                         : <ProgressBar striped variant="warning" now={result} label={`${result}%`} />
@@ -106,7 +107,7 @@ export default class ResultDetail extends Component {
 
         let dataSet = [
             {
-                columns: ["name", "phone", "birthday"],
+                columns: ["name", "votes", "result", "phone"],
                 data: this.state.exportVote,
             }
         ]
