@@ -42,7 +42,7 @@ export default class App extends Component {
             {/* 투표하기 */}
             <Route path='/voting/:voteId/:type' component={Voting} />
             {/* 투표 완료 상세정보*/}
-            <Route path='/result/:voteId' component={ResultDetail} />
+            <Route path='/result/:voteId/:type' component={ResultDetail} />
           </Switch>
       </Router>
     );

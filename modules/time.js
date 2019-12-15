@@ -6,26 +6,26 @@ class Time {
     async initVoteStatus() {
         try {
             // '생성됨' 상태인 선거 조회
-            let result = await voteModel.selectAll("0");
-            for(let i = 0; i < result[0].length; i++) {
-                let res = result[0][i];
-                if(this.isDatePassed(res.begin_date)) {
-                    await voteModel.update(res.id);
+            let result = await voteModel.selectAll(0);
+            for(let i = 0; i < result.length; i++) {
+                let res = result[i];
+                if(this.isDatePassed(res.begin)) {
+                    await voteModel.update(res._id);
                 } else {
-                    this.registerTimer(res.id, res.begin_date);
+                    this.registerTimer(res._id, res.begin);
                 }
             }
 
-            result = await voteModel.selectAll("1");
-            for(let i = 0; i < result[0].length; i++) {
-                let res = result[0][i];
-                if(this.isDatePassed(res.end_date)) {
-                    await voteModel.update(res.id);
-                } else {
-                    this.registerTimer(res.id, res.end_date);
-                }
-            }
             // '선거 진행 중' 상태인 선거 조회
+            result = await voteModel.selectAll(1);
+            for(let i = 0; i < result.length; i++) {
+                let res = result[i];
+                if(this.isDatePassed(res.end)) {
+                    await voteModel.update(res._id);
+                } else {
+                    this.registerTimer(res._id, res.end);
+                }
+            }            
         } catch(error) {
             console.log(error);
             return;
@@ -40,7 +40,7 @@ class Time {
     // 타이머 등록
     registerTimer(voteId, referenceDate) {
         setTimeout(async () => { // 완료시간 경과 안됐으면 타이머 작동
-            await voteModel.update(voteId);
+            await voteModel.updateStatus(voteId);
         }, moment(referenceDate).diff(moment()));
     }
 }

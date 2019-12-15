@@ -1,10 +1,10 @@
 const Admin = require('./schema/admin');
 
-class Admin {
+class AdminModel {
     create(admin) {
         return new Promise(async (resolve, reject) => {
             try {
-                await Admin.insertOne({ "phone": admin.phone, "pw": admin.pw, "name": admin.name }).exec();
+                const result = await new Admin(admin).save();
                 console.log(`Admin sign up result: ${result}`);
                 resolve(`관리자 계정 생성 성공`);
             } catch (err) {
@@ -17,7 +17,7 @@ class Admin {
     select(admin) { // 아이디(phone), 비밀번호
         return new Promise(async (resolve, reject) => {
             try {
-                const result = await Admin.find({ "phone": admin.phone, "pw": admin.pw }).exec();
+                const result = await Admin.findOne({ 'phone': admin.phone, "pw": admin.pw }).exec();
                 console.log(`Admin select result: ${result}`);
                 resolve(result);
             } catch (err) {
@@ -28,7 +28,7 @@ class Admin {
     }
 }
 
-module.exports = new Admin();
+module.exports = new AdminModel();
 
 // class Admin {
 //     create(admin) {

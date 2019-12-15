@@ -37,11 +37,13 @@ adminRouter.post('/admin/candidate', async (req, res) => {
     const type = req.body.type;
     const candidatesList = JSON.parse(req.body.candidates);
     const candidates = new Array();
-    for (var i = 1; i < candidatesList.length; i++) {
+    for (let i = 2; i < candidatesList.length; i++) {
         const candidate = {
-            name: candidatesList[i][0] + candidatesList[i][1],
-            phone: candidatesList[i][2],
-            detail: candidatesList[i][3]
+            // 명단 name이랑 ex 합쳐져 있길래 합침 파일에 맞게 바꿈..........
+            name: candidatesList[i][1],
+            birth: candidatesList[i][2],
+            phone: candidatesList[i][4],
+            // detail: candidatesList[i][3]
         };
         candidates.push(candidate);
     }
@@ -60,14 +62,24 @@ adminRouter.post('/admin/candidate', async (req, res) => {
 // 새로운 선거권자 등록
 adminRouter.post('/admin/electorate', async (req, res) => {
     let data;
-    const _id = req.body.vote_id; 
-    const electoratesList = JSON.parse(req.body.electorates);
+    const _id = req.body.vote_id;
+    console.log(`electorates: ${req.body.electorates}`);
+    const electoratesList = req.body.electorates;
     const electorates = new Array();
-    for (var i = 1; i < electoratesList.length; i++) {
+
+    // console.log(`electorate list: ${JSON.parse(JSON.stringify(electoratesList))}`);
+    // electorateList[index] 뽑아보기
+    console.log(`electorate list index 0: ${electoratesList[0]}`);
+    // electorateList.length 뽑아보기 
+    console.log(`electorate list length: ${electoratesList.length}`);
+    // header 빼고 날리기
+
+    for (let i = 2; i < electoratesList.length; i++) {
         const electorate = {
-            name: electoratesList[i][0] + electoratesList[i][1],
-            phone: electoratesList[i][2],
-            birth: electoratesList[i][3]
+            // 이름 합치고,  파일에 맞게 순서 바꿈
+            name: electoratesList[i][1],
+            birth: electoratesList[i][2],
+            phone: String(electoratesList[i][4]).replace(/-/g, ""),
         };
         electorates.push(electorate);
     }
@@ -109,9 +121,15 @@ adminRouter.post('/admin/auth', async (req, res) => {
     if (req.session.admin) {
         try {
             let e = await electorateModel.select(_id, name);
-            let auth = await electorateModel.updateAuth(e._id);
-            data = { result: true, msg: '인증번호 생성 성공', data: auth };
-            res.status(200).send(data);
+            if(e.length) {
+                // 여기 머지 넘어올때는 배열로 넘어오는듯 그래서 e[0]으로 바꿈
+                let auth = await electorateModel.updateAuth(e[0]._id);
+                data = { result: true, msg: '인증번호 생성 성공', data: auth };
+                res.status(200).send(data);
+            } else { // e가 없는데 그냥 실행되서 if-else로 바꿨읍니다..................
+                data = {result: false, msg: '인증번호 생성 실패 - 일치하는 회원 없음' };
+                res.status(500).send(data);
+            }
         } catch (err) {
             data = { result: false, msg: '인증번호 생성 실패' };
             res.status(500).send(data);
@@ -149,12 +167,17 @@ adminRouter.post('/login', async (req, res) => {
     };
     try {
         let result = await adminModel.select(admin);
-        req.session.admin = {
-            ...result,
-            pw: `********`
-        };
-        data = { result: true, msg: '로그인 성공', data: req.session };
-        res.status(200).send(data);
+        if(result !== null) { // 값 잘못 입력해도 로그인되길래 if-else로 바꿨읍니다......................
+                req.session.admin = {
+                ...result,
+                pw: `********`
+            };
+            data = { result: true, msg: '로그인 성공', data: req.session };
+            res.status(200).send(data);
+        } else {
+            data = { result: false, msg: '로그인 실패', data: req.session };
+            res.status(500).send(data);
+        }
     } catch (err) {
         data = { result: false, msg: '로그인 실패' }
         res.status(500).send(data);

@@ -22,7 +22,6 @@ export default class Phone extends Component {
 
             authMsg: '',
             getAuth: '',
-            getAuthStatus: false
         }
     }
 
@@ -51,9 +50,33 @@ export default class Phone extends Component {
             })
                 .then(result => result.json())
                 .then(json => {
-                    this.setState({ getAuth: json.auth, getAuthStatus: json.status })
+                    console.log(json)
+                    this.setState({ getAuth: json.auth })
 
-                    !this.state.getAuthStatus &&
+                    if (json.status) {
+                        window.sessionStorage.setItem('name', json.session.name)
+                        window.sessionStorage.setItem('status', json.session.status)
+                        switch (json.session.status) {
+                            case 0:
+                                window.location.assign(`/voting/${this.state.voteId}/1`)
+                                break;
+                            case 1:
+                                window.location.assign(`/voting/${this.state.voteId}/2`)
+                                break;
+                            case 2:
+                                window.location.assign(`/voting/${this.state.voteId}/3`)
+                                break;
+                            default:
+                                confirmAlert({
+                                    customUI: () => {
+                                        return (
+                                            <Alert content='이미 투표하셨습니다.' label='확인' href='' />
+                                        )
+                                    },
+                                    closeOnClickOutside: false
+                                })
+                        }
+                    } else {
                         confirmAlert({
                             customUI: () => {
                                 return (
@@ -62,9 +85,7 @@ export default class Phone extends Component {
                             },
                             closeOnClickOutside: false
                         })
-                    
-                    window.sessionStorage.setItem('name', name)
-                    window.sessionStorage.setItem('status', status)
+                    }
                 })
                 .catch(err => {
                     console.log(err)
@@ -128,7 +149,7 @@ export default class Phone extends Component {
                             <InputGroup className='mb-3' size='lg'>
                                 <NonLabelInputForm type='number' name='phone' placeholder='휴대폰 번호를 입력해주세요.' change={this.handleChange} style={FormStyle} />
                                 <InputGroup.Append>
-                                    <Accordion.Toggle as={Button} variant='outline-secendary' eventKey='1' onClick={this.sendAuthSubmit}>
+                                    <Accordion.Toggle as={Button} variant='outline-secendary' eventKey='1' onClick={this.sendAuthSubmit} disabled={this.state.getAuth}>
                                         인증번호 받기
                                     </Accordion.Toggle>
                                 </InputGroup.Append>
