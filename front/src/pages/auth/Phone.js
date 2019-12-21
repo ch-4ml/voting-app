@@ -126,7 +126,7 @@ export default class Phone extends Component {
         }
 
         auth === getAuth
-            ? window.location.assign(`/voting/${this.state.voteId}/1`)
+            ? window.location.assign(`/voting/${this.state.voteId}/3`)
             : confirmAlert({
                 customUI: ({ onClose }) => {
                     return (
