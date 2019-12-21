@@ -74,7 +74,7 @@ adminRouter.post('/admin/electorate', async (req, res) => {
     console.log(`electorate list length: ${electoratesList.length}`);
     // header 빼고 날리기
 
-    for (let i = 2; i < electoratesList.length; i++) {
+    for (let i = 0; i < electoratesList.length; i++) {
         const electorate = {
             // 이름 합치고,  파일에 맞게 순서 바꿈
             name: electoratesList[i][1],

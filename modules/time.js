@@ -10,7 +10,7 @@ class Time {
             for(let i = 0; i < result.length; i++) {
                 let res = result[i];
                 if(this.isDatePassed(res.begin)) {
-                    await voteModel.update(res._id);
+                    await voteModel.updateStatus(res._id);
                 } else {
                     this.registerTimer(res._id, res.begin);
                 }
@@ -21,7 +21,7 @@ class Time {
             for(let i = 0; i < result.length; i++) {
                 let res = result[i];
                 if(this.isDatePassed(res.end)) {
-                    await voteModel.update(res._id);
+                    await voteModel.updateStatus(res._id);
                 } else {
                     this.registerTimer(res._id, res.end);
                 }

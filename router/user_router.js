@@ -48,6 +48,7 @@ userRouter.post('/finvote', async (req, res) => {
     try {
         let voteResult = await voteModel.select(voteId);
         let candidateResult = await candidateModel.result(voteId);
+        console.log(candidateResult)
         data = {
             result: true,
             msg: '완료된 선거 조회 성공',
