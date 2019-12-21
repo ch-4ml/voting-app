@@ -204,39 +204,55 @@ export default class Create extends Component {
 
         const { vote_id, electorateList } = this.state
 
-        // electorateList는 2차원 배열 형태의 문자열임
-        console.log(`electorateList의 자료형은 뭘까~요? ${typeof(electorateList)}`); // string
-        // 그래서 객체로 먼저 말아봄
-        console.log(`electorateList를 객체로 만든 자료형은 뭘까~요? ${typeof({electorates: electorateList})}`); // object
-        // 밑에서 JSON.stringify로 날렸길래 바꿔볼게요~
-        console.log(`JSON.stringify({electorates: electorateList})의 자료형은? ${typeof(JSON.stringify({electorates: electorateList}))}`); // string
-        // 어떻게 달라졌을까?
-        console.log(`JSON.stringify({electorates: electorateList}): ${JSON.stringify({electorates: electorateList})}`); // 이스케이프 문자로 따옴표 붙음
-        // 배열 추출이 될까?
-        console.log(`배열 추출 : ${JSON.stringify({electorates: electorateList}).electorates}`); // undefined
-        // JSON으로 parsing하면?
-        console.log(`JSON Parsing: ${JSON.parse(JSON.stringify({electorates: electorateList})).electorates}`); // 잘 나옴
-        // parse 했으니까 추출 될까??
-        console.log(`JSON Parsing: ${JSON.parse(JSON.stringify({electorates: electorateList})).electorates[1]}`); // 응 안돼 [ 나와 
-        // 결론: 2차원 배열 형태의 문자열을 잘라서 진짜 2차원 배열로 만들어야 함
+        console.log(`vote_id: ${vote_id}`)
+        const eList = electorateList
+        const count = 500
+        let list = []
+        for(let i = 0; i <= (eList.length - 1) / count; i++) {
+            // header 빼야 해서 + 1 한거
+            let finish = i === parseInt((eList.length - 1) / count) ? eList.length : (i + 1) * count + 1
+            for(let j = i * count + 1; j < finish; j++) {
+                list.push(eList[j])
+                console.log(eList[j])
+            }
+            try {
+                await fetch('/admin/electorate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        'vote_id': vote_id,
+                        'electorates': list
+                    })
+                })
+            } catch (err) {
+                console.log(err)
+            }
+            list = []
+        }
 
-        console.log(`object type electorateList length: ${Object.keys(electorateList).length}`)
+        // JSON으로 parsing하면?
+        // console.log(`JSON Parsing: ${JSON.parse(JSON.stringify({electorates: electorateList})).electorates}`); // 잘 나옴
+        // parse 했으니까 추출 될까??
+        // console.log(`JSON Parsing: ${JSON.parse(JSON.stringify({electorates: electorateList})).electorates[1]}`); // 응 안돼 [ 나와 
+        // console.log(`object type electorateList length: ${Object.keys(electorateList).length}`)
 
         // 대체 POST할때 어떤 일이 발생하길래 저 밑에건 되는지 모르겠네
-        try {
-            await fetch('/admin/electorate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    'vote_id': vote_id,
-                    'electorates': electorateList
-                })
-            })
-        } catch (err) {
-            console.log(err)
-        }
+        // try {
+        //     await fetch('/admin/electorate', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //         body: JSON.stringify({
+        //             'vote_id': vote_id,
+        //             'electorates': electorateList
+        //         })
+        //     })
+        // } catch (err) {
+        //     console.log(err)
+        // }
     }
 
     handleScrollToStats = () => {
