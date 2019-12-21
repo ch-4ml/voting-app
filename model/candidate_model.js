@@ -38,11 +38,11 @@ class CandidateModel {
     result(_id) {
         return new Promise(async (resolve, reject) => {
             try {
-                const candidates1 = await Vote.find({ _id }).populate({ path: 'candidates1'}).exec();
-                const candidates2 = await Vote.find({ _id }).populate({ path: 'candidates2'}).exec();
-                const candidates3 = await Vote.find({ _id }).populate({ path: 'candidates3'}).exec();
+                const candidates1 = await Vote.find({ _id }).populate({ path: 'candidates1', options: { sort: { 'votes': -1 } }}).exec();
+                const candidates2 = await Vote.find({ _id }).populate({ path: 'candidates2', options: { sort: { 'votes': -1 } }}).exec();
+                const candidates3 = await Vote.find({ _id }).populate({ path: 'candidates3', options: { sort: { 'votes': -1 } }}).exec();
                 const result = { candidates1, candidates2, candidates3}
-                console.log(`Vote result select result: ${result}`);
+                console.log(`Vote result select result: ${result.candidates3[0].candidates3}`);
                 resolve(result);
             } catch(err) {
                 console.log(`선거 결과 조회 오류: ${err}`);

@@ -2,7 +2,7 @@ require('../db-connection');
 const mongoose = require('mongoose');
 
 const candidateSchema = mongoose.Schema({
-    phone   : { type: String, required: true, trim: true },
+    phone   : { type: String, trim: true },
     name    : String,
     birth   : Date,
     detail  : String,

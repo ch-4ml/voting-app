@@ -68,8 +68,9 @@ export default class ResultDetail extends Component {
                 .then(result => result.json())
                 .then(json => {
                     console.log(json.voteData)
-                    console.log(json.candidateData.candidates1[0].candidates1)
-                    this.setState({ vote: json.voteData, candidate: json.candidateData.candidates1[0].candidates1 })
+                    console.log(json.candidateData.candidates3[0])
+
+                    this.setState({ vote: json.voteData, candidate: json.candidateData.candidates3[0].candidates3 })
 
                     // if (this.state.vote.status !== 2) {
                     //     confirmAlert({
@@ -91,12 +92,13 @@ export default class ResultDetail extends Component {
     }
 
     render() {
-        let resultPg = this.state.candidate.map((c) => {
-            let result = ((c.votes / this.state.vote.votes1) * 100).toFixed(1)
-            result >= 50 && this.state.exportVote.push([c.name, c.votes, result, c.phone])
+        let resultPg = this.state.candidate.map((c, index) => {
+            let result = ((c.votes / this.state.vote.votes3) * 100).toFixed(1)
+            this.state.exportVote.push([index + 1, c.name, c.birth, c.phone, c.votes])
+            // result >= 50 && this.state.exportVote.push([c.name, c.votes, result, c.phone])
             return (
                 <>
-                    <h5 style={{ marginTop: 10 }}>{c.name}님 - 총 {this.state.vote.votes1}표 중, {c.votes}표 득표</h5>
+                    <h5 style={{ marginTop: 10 }}>{c.name}님 - {c.votes}표 득표</h5>
                     {result >= 50 ?
                         <ProgressBar striped variant="info" now={result} label={`${result}%`} />
                         : <ProgressBar striped variant="warning" now={result} label={`${result}%`} />
@@ -107,7 +109,7 @@ export default class ResultDetail extends Component {
 
         let dataSet = [
             {
-                columns: ["name", "votes", "result", "phone"],
+                columns: ["NO", "이름", "생년월일", "휴대폰", "투표 수"],
                 data: this.state.exportVote,
             }
         ]
