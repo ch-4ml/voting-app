@@ -16,7 +16,7 @@ export default class Phone extends Component {
         this.state = {
             voteId: this.props.match.params.voteId,
             name: '',
-            name_ex: '',
+            // name_ex: '',
             phone: '',
             auth: '',
 
@@ -33,7 +33,7 @@ export default class Phone extends Component {
     sendAuthSubmit = async e => {
         e.preventDefault()
 
-        const { voteId, name, name_ex, phone } = this.state
+        const { voteId, name, phone } = this.state
 
         try {
             await fetch('/auth', {
@@ -44,7 +44,7 @@ export default class Phone extends Component {
                 body: JSON.stringify({
                     'vote_id': voteId,
                     'name': name,
-                    'name_ex': name_ex,
+                    // 'name_ex': name_ex,
                     'phone': phone,
                 })
             })
@@ -53,39 +53,39 @@ export default class Phone extends Component {
                     console.log(json)
                     this.setState({ getAuth: json.auth })
 
-                    if (json.status) {
-                        window.sessionStorage.setItem('name', json.session.name)
-                        window.sessionStorage.setItem('status', json.session.status)
-                        switch (json.session.status) {
-                            case 0:
-                                window.location.assign(`/voting/${this.state.voteId}/1`)
-                                break;
-                            case 1:
-                                window.location.assign(`/voting/${this.state.voteId}/2`)
-                                break;
-                            case 2:
-                                window.location.assign(`/voting/${this.state.voteId}/3`)
-                                break;
-                            default:
-                                confirmAlert({
-                                    customUI: () => {
-                                        return (
-                                            <Alert content='이미 투표하셨습니다.' label='확인' href='' />
-                                        )
-                                    },
-                                    closeOnClickOutside: false
-                                })
-                        }
-                    } else {
-                        confirmAlert({
-                            customUI: () => {
-                                return (
-                                    <Alert content='일치하는 회원이 없습니다.' label='확인' href='' />
-                                )
-                            },
-                            closeOnClickOutside: false
-                        })
-                    }
+                    // if (json.status) {
+                    //     window.sessionStorage.setItem('name', json.session.name)
+                    //     window.sessionStorage.setItem('status', json.session.status)
+                    //     switch (json.session.status) {
+                    //         case 0:
+                    //             window.location.assign(`/voting/${this.state.voteId}/1`)
+                    //             break;
+                    //         case 1:
+                    //             window.location.assign(`/voting/${this.state.voteId}/2`)
+                    //             break;
+                    //         case 2:
+                    //             window.location.assign(`/voting/${this.state.voteId}/3`)
+                    //             break;
+                    //         default:
+                    //             confirmAlert({
+                    //                 customUI: () => {
+                    //                     return (
+                    //                         <Alert content='이미 투표하셨습니다.' label='확인' href='' />
+                    //                     )
+                    //                 },
+                    //                 closeOnClickOutside: false
+                    //             })
+                    //     }
+                    // } else {
+                    //     confirmAlert({
+                    //         customUI: () => {
+                    //             return (
+                    //                 <Alert content='일치하는 회원이 없습니다.' label='확인' href='' />
+                    //             )
+                    //         },
+                    //         closeOnClickOutside: false
+                    //     })
+                    // }
                 })
                 .catch(err => {
                     console.log(err)
@@ -99,7 +99,7 @@ export default class Phone extends Component {
     authSubmit = async e => {
         e.preventDefault()
 
-        const { voteId, name, name_ex, phone, auth, getAuth } = this.state
+        const { voteId, name, auth, getAuth } = this.state
 
         try {
             await fetch('/electorate', {
@@ -110,13 +110,16 @@ export default class Phone extends Component {
                 body: JSON.stringify({
                     'vote_id': voteId,
                     'name': name,
-                    'name_ex': name_ex,
-                    'phone': phone
+                    // 'name_ex': name_ex,
+                    'auth': auth
                 })
             })
                 .then(result => result.json())
                 .then(json => {
+                    console.log(json)
                     this.setState({ authMsg: json.msg })
+                    window.sessionStorage.setItem('name', json.session.name)
+                    window.sessionStorage.setItem('status', json.session.status)
                 })
                 .catch(err => {
                     console.log(err)
@@ -125,9 +128,10 @@ export default class Phone extends Component {
             console.log(err)
         }
 
-        auth === getAuth
-            ? window.location.assign(`/voting/${this.state.voteId}/1`)
-            : confirmAlert({
+        if(auth === getAuth) {
+            window.location.assign(`/voting/${this.state.voteId}/3`)
+        } else {
+            confirmAlert({
                 customUI: ({ onClose }) => {
                     return (
                         <AlertClose content='인증번호를 다시 입력해주세요.' label='확인' close={() => onClose()} />
@@ -135,6 +139,7 @@ export default class Phone extends Component {
                 },
                 closeOnClickOutside: false
             })
+        }
     }
 
     render() {
@@ -145,7 +150,7 @@ export default class Phone extends Component {
                     <Card style={{ margin: 10 }}>
                         <Card.Header style={{ backgroundColor: '#fff' }}>
                             <NonLabelInputForm type='text' name='name' placeholder='이름을 입력해주세요.' change={this.handleChange} style={FormStyle} />
-                            <NonLabelInputForm type='text' name='name_ex' placeholder='이름 구분자를 입력해주세요.' change={this.handleChange} style={FormStyle} />
+                            {/* <NonLabelInputForm type='text' name='name_ex' placeholder='이름 구분자를 입력해주세요.' change={this.handleChange} style={FormStyle} /> */}
                             <InputGroup className='mb-3' size='lg'>
                                 <NonLabelInputForm type='number' name='phone' placeholder='휴대폰 번호를 입력해주세요.' change={this.handleChange} style={FormStyle} />
                                 <InputGroup.Append>

@@ -39,7 +39,6 @@ adminRouter.post('/admin/candidate', async (req, res) => {
     const candidates = new Array();
     for (let i = 2; i < candidatesList.length; i++) {
         const candidate = {
-            // 명단 name이랑 ex 합쳐져 있길래 합침 파일에 맞게 바꿈..........
             name: candidatesList[i][1],
             birth: candidatesList[i][2],
             phone: candidatesList[i][4],
@@ -67,12 +66,8 @@ adminRouter.post('/admin/electorate', async (req, res) => {
     const electoratesList = req.body.electorates;
     const electorates = new Array();
 
-    // console.log(`electorate list: ${JSON.parse(JSON.stringify(electoratesList))}`);
-    // electorateList[index] 뽑아보기
     console.log(`electorate list index 0: ${electoratesList[0]}`);
-    // electorateList.length 뽑아보기 
     console.log(`electorate list length: ${electoratesList.length}`);
-    // header 빼고 날리기
 
     for (let i = 0; i < electoratesList.length; i++) {
         const electorate = {
@@ -117,7 +112,7 @@ adminRouter.post('/admin/auth', async (req, res) => {
     // 관리자로 로그인 되었는지 확인
     let data;
     const _id = req.body.vote_id;
-    const name = req.body.name + req.body.name_ex;
+    const name = req.body.name;
     if (req.session.admin) {
         try {
             let e = await electorateModel.select(_id, name);

@@ -117,6 +117,7 @@ export default class ResultDetail extends Component {
         return (
             <div style={{ margin: 25 }}>
                 <h3 style={{ marginBottom: 15 }}>{this.state.vote.title}</h3>
+                <h4>총 득표수: {this.state.vote.votes3}</h4>
                 <div style={{ padding: '5px', backgroundColor: '#fafafa' }}>
                     <div style={{ padding: '10px' }}>
                         {resultPg}

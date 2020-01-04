@@ -24,7 +24,7 @@ class ElectorateModel {
     select(_id, name) { // 선거 id, 선거권자 name
         return new Promise(async (resolve, reject) => {
             try {
-                const result = await Vote.find({ _id }).populate({ path: 'electorates', match: { name: name } }).exec();
+                const result = await Vote.find({ _id: _id }).populate({ path: 'electorates', match: { name: name } }).exec();
                 console.log(`Electorates select result: ${result[0].electorates}`);
                 resolve(result[0].electorates);
             } catch (err) {

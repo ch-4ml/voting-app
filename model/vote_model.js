@@ -53,7 +53,7 @@ class VoteModel {
     updateElectorates(_id, electorateIdObjArray) {
         return new Promise(async (resolve, reject) => {
             try {
-                await Vote.updateOne({ _id }, { $set: { electorates: electorateIdObjArray } });
+                await Vote.updateOne({ _id }, { $push: { electorates: electorateIdObjArray } });
                 console.log("선거권자 등록 성공");
                 resolve("선거권자 등록 성공");
             } catch(err) {
