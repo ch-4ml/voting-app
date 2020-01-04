@@ -66,7 +66,7 @@ userRouter.post('/finvote', async (req, res) => {
 userRouter.post('/electorate', async (req, res) => {
     let data;
     const vote_id = req.body.vote_id;
-    const name = req.body.name + req.body.name_ex;
+    const name = req.body.name;
     const auth = req.body.auth;
     try {
         const result = await electorateModel.select(vote_id, name);
@@ -99,7 +99,7 @@ userRouter.post('/electorate', async (req, res) => {
 userRouter.post('/auth', async (req, res) => {
     let data;
     const vote_id = req.body.vote_id;
-    const name = req.body.name + req.body.name_ex;
+    const name = req.body.name;
     const phone = req.body.phone;
     try {
         let result = await electorateModel.select(vote_id, name);
@@ -154,6 +154,7 @@ userRouter.put('/vote', async (req, res) => {
     const eid = req.session.electorate._id;
     const type = req.body.type;
     const candidatesIdArray = req.body.candidates;
+    console.log(`session test: ${eid}`);
     try {
         let result = await voteModel.select(vid);
         let end = result.end;

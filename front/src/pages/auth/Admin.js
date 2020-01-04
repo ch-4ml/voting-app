@@ -13,7 +13,7 @@ export default class Admin extends Component {
         this.state = {
             voteId: this.props.match.params.voteId,
             name: '',
-            name_ex: '',
+            // name_ex: '',
             limit: ''
         }
     }
@@ -43,7 +43,7 @@ export default class Admin extends Component {
         let electorateInfo = {
             'vote_id': this.state.voteId,
             'name': this.state.name,
-            'name_ex': this.state.name_ex,
+            // 'name_ex': this.state.name_ex,
             'limit': this.state.limit
         }
 
@@ -96,7 +96,7 @@ export default class Admin extends Component {
                 <h3 style={{ marginTop: 30, marginBottom: 50, textAlign: 'center' }}>회원 인증번호 생성</h3>
                 <Form onSubmit={this.handleElectorateSubmit}>
                     <NonLabelInputForm type='text' name='name' placeholder='이름을 입력해주세요.' change={this.handleChange} style={{ marginBottom: 8 }} />
-                    <NonLabelInputForm type='text' name='name_ex' placeholder='이름 구분자를 입력해주세요.' change={this.handleChange} style={{ marginBottom: 8 }} />
+                    {/* <NonLabelInputForm type='text' name='name_ex' placeholder='이름 구분자를 입력해주세요.' change={this.handleChange} style={{ marginBottom: 8 }} /> */}
                     <BlockButton type='submit' label='인증번호 받기' />
                     <DisableInput type='text' name='limit' placeholder={this.state.limit} change={this.handleChange} style={{ marginTop: 30 }} />
                 </Form>

@@ -17,7 +17,7 @@ export default class Live extends Component {
             voteId: this.props.match.params.voteId,
 
             name: '',
-            name_ex: '',
+            // name_ex: '',
             auth: ''
         }
     }
@@ -30,7 +30,7 @@ export default class Live extends Component {
     authSubmit = async e => {
         e.preventDefault()
 
-        const { voteId, name, name_ex, auth } = this.state
+        const { voteId, name, auth } = this.state
 
         try {
             await fetch('/electorate', {
@@ -41,7 +41,7 @@ export default class Live extends Component {
                 body: JSON.stringify({
                     'vote_id': voteId,
                     'name': name,
-                    'name_ex': name_ex,
+                    // 'name_ex': name_ex,
                     'auth': auth
                 })
             })
@@ -96,7 +96,7 @@ export default class Live extends Component {
                 <Card>
                     <Card.Header style={{ backgroundColor: '#fff', border: 2, marginBottom: -20 }}>
                         <NonLabelInputForm type='text' name='name' placeholder='이름을 입력해주세요.' change={this.handleChange} style={FormStyle} />
-                        <NonLabelInputForm type='text' name='name_ex' placeholder='이름 구분자를 입력해주세요.' change={this.handleChange} style={FormStyle} />
+                        {/* <NonLabelInputForm type='text' name='name_ex' placeholder='이름 구분자를 입력해주세요.' change={this.handleChange} style={FormStyle} /> */}
                     </Card.Header>
                     <hr />
                     <Card.Body>
