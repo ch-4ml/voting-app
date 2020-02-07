@@ -53,39 +53,39 @@ export default class Phone extends Component {
                     console.log(json)
                     this.setState({ getAuth: json.auth })
 
-                    // if (json.status) {
-                    //     window.sessionStorage.setItem('name', json.session.name)
-                    //     window.sessionStorage.setItem('status', json.session.status)
-                    //     switch (json.session.status) {
-                    //         case 0:
-                    //             window.location.assign(`/voting/${this.state.voteId}/1`)
-                    //             break;
-                    //         case 1:
-                    //             window.location.assign(`/voting/${this.state.voteId}/2`)
-                    //             break;
-                    //         case 2:
-                    //             window.location.assign(`/voting/${this.state.voteId}/3`)
-                    //             break;
-                    //         default:
-                    //             confirmAlert({
-                    //                 customUI: () => {
-                    //                     return (
-                    //                         <Alert content='이미 투표하셨습니다.' label='확인' href='' />
-                    //                     )
-                    //                 },
-                    //                 closeOnClickOutside: false
-                    //             })
-                    //     }
-                    // } else {
-                    //     confirmAlert({
-                    //         customUI: () => {
-                    //             return (
-                    //                 <Alert content='일치하는 회원이 없습니다.' label='확인' href='' />
-                    //             )
-                    //         },
-                    //         closeOnClickOutside: false
-                    //     })
-                    // }
+                    if (json.status) {
+                        window.sessionStorage.setItem('name', json.session.name)
+                        window.sessionStorage.setItem('status', json.session.status)
+                        switch (json.session.status) {
+                            case 0:
+                                window.location.assign(`/voting/${this.state.voteId}/1`)
+                                break;
+                            case 1:
+                                window.location.assign(`/voting/${this.state.voteId}/2`)
+                                break;
+                            case 2:
+                                window.location.assign(`/voting/${this.state.voteId}/3`)
+                                break;
+                            default:
+                                confirmAlert({
+                                    customUI: () => {
+                                        return (
+                                            <Alert content='이미 투표하셨습니다.' label='확인' href='' />
+                                        )
+                                    },
+                                    closeOnClickOutside: false
+                                })
+                        }
+                    } else {
+                        confirmAlert({
+                            customUI: () => {
+                                return (
+                                    <Alert content='일치하는 회원이 없습니다.' label='확인' href='' />
+                                )
+                            },
+                            closeOnClickOutside: false
+                        })
+                    }
                 })
                 .catch(err => {
                     console.log(err)

@@ -7,7 +7,7 @@ import DateRangePicker from 'react-daterange-picker'
 import 'react-daterange-picker/dist/css/react-calendar.css'
 import moment from 'moment'
 
-import { Alert } from '../../components/Alert'
+import { Alert, AlertClose } from '../../components/Alert'
 import { VoteForm } from '../../components/Form'
 import { BlockButton } from '../../components/Button'
 
@@ -94,30 +94,45 @@ export default class Create extends Component {
 
         const { title, dates, limit, context } = this.state
 
-        let voteInfo = {
-            'title': title,
-            'context': context,
-            'begin_date': moment(dates.start).format('YYYY-MM-DD HH:mm:ss'),
-            'end_date': moment(dates.end).format('YYYY-MM-DD HH:mm:ss'),
-            'limit': limit
-        }
-        console.log(JSON.stringify(voteInfo))
+        if (title === '' || dates === '' || limit === '' || context === '') {
+            confirmAlert({
+                customUI: ({ onClose }) => {
+                    return (
+                        <AlertClose content='모든 항목에 값을 입력해주세요.' label='확인' close={() => onClose()} />
+                    )
+                },
+                closeOnClickOutside: false
+            })
 
-        const response = fetch('/admin/vote', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(voteInfo),
-        })
-        response.then(result => result.json())
-            .then(json => {
-                console.log(json.msg)
-                this.setState({ vote_id: json.data, isVoteSubmit: true })
+            return false;
+        }
+        else {
+
+            let voteInfo = {
+                'title': title,
+                'context': context,
+                'begin_date': moment(dates.start).format('YYYY-MM-DD HH:mm:ss'),
+                'end_date': moment(dates.end).format('YYYY-MM-DD HH:mm:ss'),
+                'limit': limit
+            }
+            console.log(JSON.stringify(voteInfo))
+
+            const response = fetch('/admin/vote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(voteInfo),
             })
-            .catch(err => {
-                console.log(err)
-            })
+            response.then(result => result.json())
+                .then(json => {
+                    console.log(json.msg)
+                    this.setState({ vote_id: json.data, isVoteSubmit: true })
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+        }
     }
 
     // 새로운 후보자1 등록 api fetch
@@ -126,24 +141,52 @@ export default class Create extends Component {
 
         const { vote_id, candidateList1 } = this.state
 
-        await fetch('/admin/candidate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                'vote_id': vote_id,
-                'candidates': candidateList1,
-                'type': 1
+        if (vote_id === '') {
+            confirmAlert({
+                customUI: ({ onClose }) => {
+                    return (
+                        <AlertClose content='먼저 선거를 생성해주세요.' label='확인' close={() => onClose()} />
+                    )
+                },
+                closeOnClickOutside: false
             })
-        }).then(result => result.json())
-            .then(json => {
-                console.log(json.msg)
-                this.setState({ isCandidate1Submit: true })
+
+            return false;
+        }
+
+        else if (candidateList1 === '') {
+            confirmAlert({
+                customUI: ({ onClose }) => {
+                    return (
+                        <AlertClose content='장로 피선거권자 파일을 등록해주세요.' label='확인' close={() => onClose()} />
+                    )
+                },
+                closeOnClickOutside: false
             })
-            .catch(err => {
-                console.log(err)
-            })
+
+            return false;
+        }
+
+        else {
+            await fetch('/admin/candidate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    'vote_id': vote_id,
+                    'candidates': candidateList1,
+                    'type': 1
+                })
+            }).then(result => result.json())
+                .then(json => {
+                    console.log(json.msg)
+                    this.setState({ isCandidate1Submit: true })
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+        }
     }
 
     // 새로운 후보자2 등록 api fetch
@@ -152,24 +195,53 @@ export default class Create extends Component {
 
         const { vote_id, candidateList2 } = this.state
 
-        await fetch('/admin/candidate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                'vote_id': vote_id,
-                'candidates': candidateList2,
-                'type': 2
+        if (vote_id === '') {
+            confirmAlert({
+                customUI: ({ onClose }) => {
+                    return (
+                        <AlertClose content='먼저 선거를 생성해주세요.' label='확인' close={() => onClose()} />
+                    )
+                },
+                closeOnClickOutside: false
             })
-        }).then(result => result.json())
-            .then(json => {
-                console.log(json.msg)
-                this.setState({ isCandidate2Submit: true })
+
+            return false;
+        }
+
+        else if (candidateList2 === '') {
+            confirmAlert({
+                customUI: ({ onClose }) => {
+                    return (
+                        <AlertClose content='안수집사 피선거권자 파일을 등록해주세요.' label='확인' close={() => onClose()} />
+                    )
+                },
+                closeOnClickOutside: false
             })
-            .catch(err => {
-                console.log(err)
-            })
+
+            return false;
+        }
+
+        else {
+
+            await fetch('/admin/candidate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    'vote_id': vote_id,
+                    'candidates': candidateList2,
+                    'type': 2
+                })
+            }).then(result => result.json())
+                .then(json => {
+                    console.log(json.msg)
+                    this.setState({ isCandidate2Submit: true })
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+        }
     }
 
     // 새로운 후보자3 등록 api fetch
@@ -178,24 +250,53 @@ export default class Create extends Component {
 
         const { vote_id, candidateList3 } = this.state
 
-        await fetch('/admin/candidate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                'vote_id': vote_id,
-                'candidates': candidateList3,
-                'type': 3
+        if (vote_id === '') {
+            confirmAlert({
+                customUI: ({ onClose }) => {
+                    return (
+                        <AlertClose content='먼저 선거를 생성해주세요.' label='확인' close={() => onClose()} />
+                    )
+                },
+                closeOnClickOutside: false
             })
-        }).then(result => result.json())
-            .then(json => {
-                console.log(json.msg)
-                this.setState({ isCandidate3Submit: true })
+
+            return false;
+        }
+
+        else if (candidateList3 === '') {
+            confirmAlert({
+                customUI: ({ onClose }) => {
+                    return (
+                        <AlertClose content='권사 피선거권자 파일을 등록해주세요.' label='확인' close={() => onClose()} />
+                    )
+                },
+                closeOnClickOutside: false
             })
-            .catch(err => {
-                console.log(err)
-            })
+
+            return false;
+        }
+
+        else {
+
+            await fetch('/admin/candidate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    'vote_id': vote_id,
+                    'candidates': candidateList3,
+                    'type': 3
+                })
+            }).then(result => result.json())
+                .then(json => {
+                    console.log(json.msg)
+                    this.setState({ isCandidate3Submit: true })
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+        }
     }
 
     // 새로운 선거권자 등록 api fetch
@@ -204,55 +305,84 @@ export default class Create extends Component {
 
         const { vote_id, electorateList } = this.state
 
-        console.log(`vote_id: ${vote_id}`)
-        const eList = electorateList
-        const count = 500
-        let list = []
-        for(let i = 0; i <= (eList.length - 1) / count; i++) {
-            // header 빼야 해서 + 1 한거
-            let finish = i === parseInt((eList.length - 1) / count) ? eList.length : (i + 1) * count + 1
-            for(let j = i * count + 1; j < finish; j++) {
-                list.push(eList[j])
-                console.log(eList[j])
-            }
-            try {
-                await fetch('/admin/electorate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        'vote_id': vote_id,
-                        'electorates': list
-                    })
-                })
-            } catch (err) {
-                console.log(err)
-            }
-            list = []
+        if (vote_id === '') {
+            confirmAlert({
+                customUI: ({ onClose }) => {
+                    return (
+                        <AlertClose content='먼저 선거를 생성해주세요.' label='확인' close={() => onClose()} />
+                    )
+                },
+                closeOnClickOutside: false
+            })
+
+            return false;
         }
 
-        // JSON으로 parsing하면?
-        // console.log(`JSON Parsing: ${JSON.parse(JSON.stringify({electorates: electorateList})).electorates}`); // 잘 나옴
-        // parse 했으니까 추출 될까??
-        // console.log(`JSON Parsing: ${JSON.parse(JSON.stringify({electorates: electorateList})).electorates[1]}`); // 응 안돼 [ 나와 
-        // console.log(`object type electorateList length: ${Object.keys(electorateList).length}`)
+        else if (electorateList === '') {
+            confirmAlert({
+                customUI: ({ onClose }) => {
+                    return (
+                        <AlertClose content='선거권자 파일을 등록해주세요.' label='확인' close={() => onClose()} />
+                    )
+                },
+                closeOnClickOutside: false
+            })
 
-        // 대체 POST할때 어떤 일이 발생하길래 저 밑에건 되는지 모르겠네
-        // try {
-        //     await fetch('/admin/electorate', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json',
-        //         },
-        //         body: JSON.stringify({
-        //             'vote_id': vote_id,
-        //             'electorates': electorateList
-        //         })
-        //     })
-        // } catch (err) {
-        //     console.log(err)
-        // }
+            return false;
+        }
+
+        else {
+
+            console.log(`vote_id: ${vote_id}`)
+            const eList = electorateList
+            const count = 500
+            let list = []
+            for (let i = 0; i <= (eList.length - 1) / count; i++) {
+                // header 빼야 해서 + 1 한거
+                let finish = i === parseInt((eList.length - 1) / count) ? eList.length : (i + 1) * count + 1
+                for (let j = i * count + 1; j < finish; j++) {
+                    list.push(eList[j])
+                    console.log(eList[j])
+                }
+                try {
+                    await fetch('/admin/electorate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            'vote_id': vote_id,
+                            'electorates': list
+                        })
+                    })
+                } catch (err) {
+                    console.log(err)
+                }
+                list = []
+            }
+
+            // JSON으로 parsing하면?
+            // console.log(`JSON Parsing: ${JSON.parse(JSON.stringify({electorates: electorateList})).electorates}`); // 잘 나옴
+            // parse 했으니까 추출 될까??
+            // console.log(`JSON Parsing: ${JSON.parse(JSON.stringify({electorates: electorateList})).electorates[1]}`); // 응 안돼 [ 나와 
+            // console.log(`object type electorateList length: ${Object.keys(electorateList).length}`)
+
+            // 대체 POST할때 어떤 일이 발생하길래 저 밑에건 되는지 모르겠네
+            // try {
+            //     await fetch('/admin/electorate', {
+            //         method: 'POST',
+            //         headers: {
+            //             'Content-Type': 'application/json',
+            //         },
+            //         body: JSON.stringify({
+            //             'vote_id': vote_id,
+            //             'electorates': electorateList
+            //         })
+            //     })
+            // } catch (err) {
+            //     console.log(err)
+            // }
+        }
     }
 
     handleScrollToStats = () => {
@@ -324,7 +454,7 @@ export default class Create extends Component {
             console.log(resp.rows.slice(1, resp.rows.length))
             console.log(JSON.stringify(resp.rows))
             // console.log(JSON.parse(resp.rows))
-            console.log(typeof(resp.rows))
+            console.log(typeof (resp.rows))
             console.log(resp.rows[0])
             console.log(Object.keys(resp.rows).length)
             this.setState({ electorateList: resp.rows })

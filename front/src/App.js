@@ -7,6 +7,7 @@ import ResultDetail from './pages/vote/ResultDetail';
 
 import SelectAuth from './pages/auth/SelectAuth';
 import Auth_Phone from './pages/auth/Phone';
+import Auth_LiveCheck from './pages/auth/LiveCheck';
 import Auth_Live from './pages/auth/Live';
 import Auth_Admin from './pages/auth/Admin';
 
@@ -30,6 +31,7 @@ export default class App extends Component {
             {/* 완료된 선거 목록 */}
             <Route path='/results' component={Result} />
             {/* 인증 */}
+            <Route path='/liveCheck/:voteId' component={Auth_LiveCheck} />
             <Route path='/auth/:voteId' component={SelectAuth} />
             <Route path='/phone/:voteId' component={Auth_Phone} />
             <Route path='/live/:voteId' component={Auth_Live} />

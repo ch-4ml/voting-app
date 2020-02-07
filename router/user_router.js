@@ -67,12 +67,18 @@ userRouter.post('/electorate', async (req, res) => {
     let data;
     const vote_id = req.body.vote_id;
     const name = req.body.name;
-    const auth = req.body.auth;
+    // const auth = req.body.auth;
     try {
         const result = await electorateModel.select(vote_id, name);
         const electorate = result[0]._doc;
-        if (electorate) {
-            if (electorate.auth !== parseInt(auth)) { // 인증번호가 일치하지 않는 경우
+        if (electorate) {   
+            if(electorate.status === 0) {
+                data = { status: true, msg: '인증 성공.', session: req.session.electorate };
+                await electorateModel.updateStatus(electorate._id);
+            } else {
+                data = { status: false, msg: '이미 투표함', session: req.session.electorate };
+            }
+            /* if (electorate.auth !== parseInt(auth)) { // 인증번호가 일치하지 않는 경우
                 // 인증번호 불일치
                 console.log('인증번호 불일치');
                 data = { status: false, msg: '인증번호 불일치.' };
@@ -84,7 +90,7 @@ userRouter.post('/electorate', async (req, res) => {
                 req.session.electorate = { ...electorate, auth: '********' };
                 console.log(req.session.electorate);
                 data = { status: true, msg: '인증 성공.', session: req.session.electorate }
-            }
+            } */
         } else { // 데이터 없음
             data = { status: false, msg: '일치하는 데이터 없음.' }
         }
