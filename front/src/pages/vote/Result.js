@@ -67,7 +67,7 @@ export default class Result extends Component {
                         {this.state.voteList.map(voteList => {
                             return (
                                 <VoteListItem
-                                    href={`/result/${voteList._id}/1`}
+                                    href={`/resultCheck/${voteList._id}`}
                                     key={`voteList-${voteList._id}`}
                                     title={voteList.title}
                                     begin_date={moment(voteList.begin).format('YYYY-MM-DD')}

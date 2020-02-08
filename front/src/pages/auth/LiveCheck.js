@@ -34,13 +34,19 @@ export default class LiveCheck extends Component {
                     })
             })
             .catch(err => console.log(err))
-
         
+        this.count()
+        this.totalCount()
     }
 
     componentDidMount() {
-        // this.count()
-        this.totalCount()
+        this.trigger()
+    }
+
+    trigger() {
+        setInterval(() => {
+            this.count()
+        }, 5000);
     }
 
     async totalCount() {
@@ -51,13 +57,12 @@ export default class LiveCheck extends Component {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    'vote_id': this.state.vote_id,
+                    'vote_id': this.state.voteId,
                 })
             })
                 .then(result => result.json())
                 .then(json => {
-                    console.log(json.data)
-                    // this.setState( { totalCount: json.data.length })
+                    this.setState( { totalCount: Object.keys(json.data).length, electorateList: json.data })
                 })
                 .catch(err => {
                     console.log(err)
@@ -75,12 +80,12 @@ export default class LiveCheck extends Component {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    'vote_id': this.state.vote_id,
+                    'vote_id': this.state.voteId,
                 })
             })
                 .then(result => result.json())
                 .then(json => {
-                    console.log(json.data)
+                    this.setState( { count: json.data })
                 })
                 .catch(err => {
                     console.log(err)
@@ -205,11 +210,11 @@ export default class LiveCheck extends Component {
         let listItem = this.state.electorateList.map(c => {
             if (c.status === 0) {
                 return (
-                    <li key={c._id} onClick={() => { this.selectList(c._id, c.status) }}>{c.name}</li>
+                    <li key={c._id} onClick={() => { this.selectList(c._id, c.status) }} style={{ margin: '1rem', textAlign: 'center', fontSize: '1.4rem', listStyle: 'none' }}>{c.name}</li>
                 )
             } else {
                 return (
-                    <li key={c._id} onClick={() => { this.selectList(c._id, c.status) }}  style={{ background: 'chocolate' }}>{c.name}</li>
+                    <li key={c._id} onClick={() => { this.selectList(c._id, c.status) }} style={{ margin: '1rem', color: 'steelblue', textAlign: 'center', fontSize: '1.4rem', listStyle: 'none' }}>{c.name} (투표 용지 수령)</li>
                 )
             }
         })
@@ -218,7 +223,7 @@ export default class LiveCheck extends Component {
             <div style={{ marginTop: 25, padding: 15, flex: 1 }}>
                 <h3 style={{ marginTop: 30, marginBottom: 50, textAlign: 'center' }}>선거권자 인증</h3>
                 <div style={{ marginTop: 40 }}>
-                    <h5 style={{ marginTop: 30, marginBottom: 50, textAlign: 'center' }}>현재 투표 현황 : /{this.state.totalCount}명</h5>
+                    <h5 style={{ marginTop: 30, marginBottom: 50, textAlign: 'center' }}>현재 투표 현황 : {this.state.count}명 / {this.state.totalCount}명</h5>
                 </div>
                 <Card>
                     <Card.Body>

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 import Main from './Main';
 import Result from './pages/vote/Result';
+import ResultCheck from './pages/vote/ResultCheck';
 import ResultDetail from './pages/vote/ResultDetail';
 
 import SelectAuth from './pages/auth/SelectAuth';
@@ -47,6 +48,7 @@ export default class App extends Component {
             <Route path='/voting/:voteId/:type' component={Voting} />
             {/* 투표 완료 상세정보*/}
             <Route path='/result/:voteId/:type' component={ResultDetail} />
+            <Route path='/resultCheck/:voteId' component={ResultCheck} />
           </Switch>
       </Router>
     );
