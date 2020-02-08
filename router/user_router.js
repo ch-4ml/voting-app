@@ -62,7 +62,7 @@ userRouter.post('/finvote', async (req, res) => {
     }
 });
 
-// 선거권자 인증
+// 선거권자 조회 
 userRouter.post('/electorate', async (req, res) => {
     let data;
     const vote_id = req.body.vote_id;
