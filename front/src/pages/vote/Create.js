@@ -1,5 +1,4 @@
 import React, { Component, createRef } from 'react'
-import { ExcelRenderer } from 'react-excel-renderer'
 import { Button, Form } from 'react-bootstrap'
 import { confirmAlert } from 'react-confirm-alert'
 import 'react-confirm-alert/src/react-confirm-alert.css'
@@ -7,8 +6,7 @@ import DateRangePicker from 'react-daterange-picker'
 import 'react-daterange-picker/dist/css/react-calendar.css'
 import moment from 'moment'
 
-import { Alert } from '../../components/Alert'
-import { VoteForm } from '../../components/Form'
+import { Alert, AlertClose } from '../../components/Alert'
 import { BlockButton } from '../../components/Button'
 
 export default class Create extends Component {
@@ -23,46 +21,8 @@ export default class Create extends Component {
             limit: '',
             vote_id: '',
 
-            // name: '',
-            // name_ex: '',
-            // phone: '',
-            candidateList1: '',
-            candidateList2: '',
-            candidateList3: '',
-            electorateList: '',
-
-            isOpen: false,
-            can1DataLoaded: false,
-            can2DataLoaded: false,
-            can3DataLoaded: false,
-            eleDataLoaded: false,
-            isFormInvalidCan1: false,
-            isFormInvalidCan2: false,
-            isFormInvalidCan3: false,
-            isFormInvalidEle: false,
-            uploadedCan1FileName: '',
-            uploadedCan2FileName: '',
-            uploadedCan3FileName: '',
-            uploadedEleFileName: '',
-            can1Rows: null,
-            can1Cols: null,
-            can2Rows: null,
-            can2Cols: null,
-            can3Rows: null,
-            can3Cols: null,
-            eleRows: null,
-            eleCols: null,
-
             isVoteSubmit: false,
-            isCandidate1Submit: false,
-            isCandidate2Submit: false,
-            isCandidate3Submit: false,
         }
-
-        this.fileCan1Input = React.createRef()
-        this.fileCan2Input = React.createRef()
-        this.fileCan3Input = React.createRef()
-        this.fileEleInput = React.createRef()
     }
 
     componentDidMount() {
@@ -94,165 +54,45 @@ export default class Create extends Component {
 
         const { title, dates, limit, context } = this.state
 
-        let voteInfo = {
-            'title': title,
-            'context': context,
-            'begin_date': moment(dates.start).format('YYYY-MM-DD HH:mm:ss'),
-            'end_date': moment(dates.end).format('YYYY-MM-DD HH:mm:ss'),
-            'limit': limit
+        if (title === '' || dates === '' || limit === '' || context === '') {
+            confirmAlert({
+                customUI: ({ onClose }) => {
+                    return (
+                        <AlertClose content='모든 항목에 값을 입력해주세요.' label='확인' close={() => onClose()} />
+                    )
+                },
+                closeOnClickOutside: false
+            })
+
+            return false;
         }
-        console.log(JSON.stringify(voteInfo))
+        else {
 
-        const response = fetch('/admin/vote', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(voteInfo),
-        })
-        response.then(result => result.json())
-            .then(json => {
-                console.log(json.msg)
-                this.setState({ vote_id: json.data, isVoteSubmit: true })
-            })
-            .catch(err => {
-                console.log(err)
-            })
-    }
-
-    // 새로운 후보자1 등록 api fetch
-    handleCreateVoteCandidate1Submit = async e => {
-        e.preventDefault()
-
-        const { vote_id, candidateList1 } = this.state
-
-        await fetch('/admin/candidate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                'vote_id': vote_id,
-                'candidates': candidateList1,
-                'type': 1
-            })
-        }).then(result => result.json())
-            .then(json => {
-                console.log(json.msg)
-                this.setState({ isCandidate1Submit: true })
-            })
-            .catch(err => {
-                console.log(err)
-            })
-    }
-
-    // 새로운 후보자2 등록 api fetch
-    handleCreateVoteCandidate2Submit = async e => {
-        e.preventDefault()
-
-        const { vote_id, candidateList2 } = this.state
-
-        await fetch('/admin/candidate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                'vote_id': vote_id,
-                'candidates': candidateList2,
-                'type': 2
-            })
-        }).then(result => result.json())
-            .then(json => {
-                console.log(json.msg)
-                this.setState({ isCandidate2Submit: true })
-            })
-            .catch(err => {
-                console.log(err)
-            })
-    }
-
-    // 새로운 후보자3 등록 api fetch
-    handleCreateVoteCandidate3Submit = async e => {
-        e.preventDefault()
-
-        const { vote_id, candidateList3 } = this.state
-
-        await fetch('/admin/candidate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                'vote_id': vote_id,
-                'candidates': candidateList3,
-                'type': 3
-            })
-        }).then(result => result.json())
-            .then(json => {
-                console.log(json.msg)
-                this.setState({ isCandidate3Submit: true })
-            })
-            .catch(err => {
-                console.log(err)
-            })
-    }
-
-    // 새로운 선거권자 등록 api fetch
-    handleCreateVoteElectorateSubmit = async e => {
-        e.preventDefault()
-
-        const { vote_id, electorateList } = this.state
-
-        console.log(`vote_id: ${vote_id}`)
-        const eList = electorateList
-        const count = 500
-        let list = []
-        for(let i = 0; i <= (eList.length - 1) / count; i++) {
-            // header 빼야 해서 + 1 한거
-            let finish = i === parseInt((eList.length - 1) / count) ? eList.length : (i + 1) * count + 1
-            for(let j = i * count + 1; j < finish; j++) {
-                list.push(eList[j])
-                console.log(eList[j])
+            let voteInfo = {
+                'title': title,
+                'context': context,
+                'begin_date': moment(dates.start).format('YYYY-MM-DD HH:mm:ss'),
+                'end_date': moment(dates.end).format('YYYY-MM-DD HH:mm:ss'),
+                'limit': limit
             }
-            try {
-                await fetch('/admin/electorate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        'vote_id': vote_id,
-                        'electorates': list
-                    })
+            console.log(JSON.stringify(voteInfo))
+
+            const response = fetch('/admin/vote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(voteInfo),
+            })
+            response.then(result => result.json())
+                .then(json => {
+                    console.log(json.msg)
+                    this.setState({ vote_id: json.data, isVoteSubmit: true })
                 })
-            } catch (err) {
-                console.log(err)
-            }
-            list = []
+                .catch(err => {
+                    console.log(err)
+                })
         }
-
-        // JSON으로 parsing하면?
-        // console.log(`JSON Parsing: ${JSON.parse(JSON.stringify({electorates: electorateList})).electorates}`); // 잘 나옴
-        // parse 했으니까 추출 될까??
-        // console.log(`JSON Parsing: ${JSON.parse(JSON.stringify({electorates: electorateList})).electorates[1]}`); // 응 안돼 [ 나와 
-        // console.log(`object type electorateList length: ${Object.keys(electorateList).length}`)
-
-        // 대체 POST할때 어떤 일이 발생하길래 저 밑에건 되는지 모르겠네
-        // try {
-        //     await fetch('/admin/electorate', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json',
-        //         },
-        //         body: JSON.stringify({
-        //             'vote_id': vote_id,
-        //             'electorates': electorateList
-        //         })
-        //     })
-        // } catch (err) {
-        //     console.log(err)
-        // }
     }
 
     handleScrollToStats = () => {
@@ -261,180 +101,10 @@ export default class Create extends Component {
         })
     }
 
-    renderCandidate1File = (fileObj) => {
-        ExcelRenderer(fileObj, (err, resp) => {
-            if (err) {
-                console.log(err)
-            }
-            else {
-                this.setState({
-                    can1DataLoaded: true,
-                    can1Cols: resp.cols,
-                    can1Rows: resp.rows
-                })
-            }
-            this.setState({ candidateList1: JSON.stringify(resp.rows) })
-        })
-    }
-
-    renderCandidate2File = (fileObj) => {
-        ExcelRenderer(fileObj, (err, resp) => {
-            if (err) {
-                console.log(err)
-            }
-            else {
-                this.setState({
-                    can2DataLoaded: true,
-                    can2Cols: resp.cols,
-                    can2Rows: resp.rows
-                })
-            }
-            this.setState({ candidateList2: JSON.stringify(resp.rows) })
-        })
-    }
-
-    renderCandidate3File = (fileObj) => {
-        ExcelRenderer(fileObj, (err, resp) => {
-            if (err) {
-                console.log(err)
-            }
-            else {
-                this.setState({
-                    can3DataLoaded: true,
-                    can3Cols: resp.cols,
-                    can3Rows: resp.rows
-                })
-            }
-            this.setState({ candidateList3: JSON.stringify(resp.rows) })
-        })
-    }
-
-    renderElectorateFile = (fileObj) => {
-        ExcelRenderer(fileObj, (err, resp) => {
-            if (err) {
-                console.log(err)
-            }
-            else {
-                this.setState({
-                    eleDataLoaded: true,
-                    eleCols: resp.cols,
-                    eleRows: resp.rows.slice(1, resp.rows.length)
-                })
-            }
-            console.log(resp.rows.slice(1, resp.rows.length))
-            console.log(JSON.stringify(resp.rows))
-            // console.log(JSON.parse(resp.rows))
-            console.log(typeof(resp.rows))
-            console.log(resp.rows[0])
-            console.log(Object.keys(resp.rows).length)
-            this.setState({ electorateList: resp.rows })
-        })
-    }
-
-    fileCandidate1Handler = (event) => {
-        if (event.target.files.length) {
-            let fileObj = event.target.files[0]
-            let fileName = fileObj.name
-
-            if (fileName.slice(fileName.lastIndexOf('.') + 1) === "xlsx") {
-                this.setState({
-                    uploadedCan1FileName: fileName,
-                    isFormInvalidCan1: false
-                })
-                this.renderCandidate1File(fileObj)
-            }
-            else {
-                this.setState({
-                    isFormInvalidCan1: true,
-                    uploadedCan1FileName: ""
-                })
-            }
-        }
-    }
-
-    fileCandidate2Handler = (event) => {
-        if (event.target.files.length) {
-            let fileObj = event.target.files[0]
-            let fileName = fileObj.name
-
-            if (fileName.slice(fileName.lastIndexOf('.') + 1) === "xlsx") {
-                this.setState({
-                    uploadedCan2FileName: fileName,
-                    isFormInvalidCan2: false
-                })
-                this.renderCandidate2File(fileObj)
-            }
-            else {
-                this.setState({
-                    isFormInvalidCan2: true,
-                    uploadedCan2FileName: ""
-                })
-            }
-        }
-    }
-
-    fileCandidate3Handler = (event) => {
-        if (event.target.files.length) {
-            let fileObj = event.target.files[0]
-            let fileName = fileObj.name
-
-            if (fileName.slice(fileName.lastIndexOf('.') + 1) === "xlsx") {
-                this.setState({
-                    uploadedCan3FileName: fileName,
-                    isFormInvalidCan3: false
-                })
-                this.renderCandidate3File(fileObj)
-            }
-            else {
-                this.setState({
-                    isFormInvalidCan3: true,
-                    uploadedCan3FileName: ""
-                })
-            }
-        }
-    }
-
-    fileElectorateHandler = (event) => {
-        if (event.target.files.length) {
-            let fileObj = event.target.files[0]
-            let fileName = fileObj.name
-
-            if (fileName.slice(fileName.lastIndexOf('.') + 1) === "xlsx") {
-                this.setState({
-                    uploadedEleFileName: fileName,
-                    isFormInvalidEle: false
-                })
-                this.renderElectorateFile(fileObj)
-            }
-            else {
-                this.setState({
-                    isFormInvalidEle: true,
-                    uploadedEleFileName: ""
-                })
-            }
-        }
-    }
-
     toggle = () => {
         this.setState({
             isOpen: !this.state.isOpen
         })
-    }
-
-    openCan1FileBrowser = () => {
-        this.fileCan1Input.current.click()
-    }
-
-    openCan2FileBrowser = () => {
-        this.fileCan2Input.current.click()
-    }
-
-    openCan3FileBrowser = () => {
-        this.fileCan3Input.current.click()
-    }
-
-    openEleFileBrowser = () => {
-        this.fileEleInput.current.click()
     }
 
     callApi = async () => {
@@ -444,7 +114,7 @@ export default class Create extends Component {
     }
 
     submitBtn = () => {
-        window.location.assign('/')
+        window.location.assign(`/insert/${this.state.vote_id}`)
     }
 
     render() {
@@ -475,60 +145,10 @@ export default class Create extends Component {
                     </Form.Group>
                     <Button variant='primary' type='submit' size='lg' disabled={this.state.isVoteSubmit}
                         style={{ marginTop: 13, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-                        다음
+                        선거 생성
                             </Button>
                 </Form>
-                <VoteForm
-                    onSubmit={this.handleCreateVoteCandidate1Submit}
-                    title='장로 피선거권자 파일 등록'
-                    onClick={this.openCan1FileBrowser}
-                    disabled={this.candidateList1}
-                    label='장로 파일 등록'
-                    onChange={this.fileCandidate1Handler}
-                    refs={this.fileCan1Input}
-                    value={this.state.uploadedCan1FileName}
-                    dataLoaded={this.state.can1DataLoaded}
-                    data={this.state.can1Rows}
-                    columns={this.state.can1Cols}
-                    subBtn={this.state.isCandidate1Submit} />
-                <VoteForm
-                    onSubmit={this.handleCreateVoteCandidate2Submit}
-                    title='안수집사 피선거권자 파일 등록'
-                    onClick={this.openCan2FileBrowser}
-                    disabled={this.candidateList2}
-                    label='안수집사 파일 등록'
-                    onChange={this.fileCandidate2Handler}
-                    refs={this.fileCan2Input}
-                    value={this.state.uploadedCan2FileName}
-                    dataLoaded={this.state.can2DataLoaded}
-                    data={this.state.can2Rows}
-                    columns={this.state.can2Cols}
-                    subBtn={this.state.isCandidate2Submit} />
-                <VoteForm
-                    onSubmit={this.handleCreateVoteCandidate3Submit}
-                    title='권사 피선거권자 파일 등록'
-                    onClick={this.openCan3FileBrowser}
-                    disabled={this.candidateList3}
-                    label='권사 파일 등록'
-                    onChange={this.fileCandidate3Handler}
-                    refs={this.fileCan3Input}
-                    value={this.state.uploadedCan3FileName}
-                    dataLoaded={this.state.can3DataLoaded}
-                    data={this.state.can3Rows}
-                    columns={this.state.can3Cols}
-                    subBtn={this.state.isCandidate3Submit} />
-                <VoteForm
-                    onSubmit={this.handleCreateVoteElectorateSubmit}
-                    title='선거권자 파일 등록'
-                    onClick={this.openEleFileBrowser}
-                    label='선거권자 파일 등록'
-                    onChange={this.fileElectorateHandler}
-                    refs={this.fileEleInput}
-                    value={this.state.uploadedEleFileName}
-                    dataLoaded={this.state.eleDataLoaded}
-                    data={this.state.eleRows}
-                    columns={this.state.eleCols} />
-                <BlockButton label='선거 등록' click={this.submitBtn} />
+                <BlockButton label='선거권자 등록하기' click={this.submitBtn} />
             </div>
         )
     }

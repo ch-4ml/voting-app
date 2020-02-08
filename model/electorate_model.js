@@ -24,14 +24,45 @@ class ElectorateModel {
     select(_id, name) { // 선거 id, 선거권자 name
         return new Promise(async (resolve, reject) => {
             try {
-                const result = await Vote.find({ _id: _id }).populate({ path: 'electorates', match: { name: name } }).exec();
-                console.log(`Electorates select result: ${result[0].electorates}`);
+                console.log(`id in select: ${_id}`);
+                const result = await Vote.find({ _id: _id }).populate({ path: 'electorates', match: { name: { $regex: '.*' + name + '.*' } } }).exec();
+                console.log(`Electorates select result: ${result[0].electorates.length}`);
                 resolve(result[0].electorates);
             } catch (err) {
                 console.log(`선거권자 조회 오류: ${err}`);
                 reject("선거권자 조회 실패");
             }
         });
+    }
+
+    // 선거권자 전체 조회
+    selectAll(_id) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                console.log(`id in selectAll: ${_id}`);
+                const result = await Vote.find({ _id: _id }).populate({ path: 'electorates' }).exec();
+                console.log(`Electorates select result: ${result[0].electorates.length}`);
+                resolve(result[0].electorates);
+            } catch (err) {
+                console.log(`선거권자 조회 오류: ${err}`);
+                reject("선거권자 조회 실패");
+            }
+        });
+    }
+
+    count(_id) {
+        return new Promise(async (resolve, reject) => {
+            try {                
+                console.log(`id in count: ${_id}`);
+                const result = await Vote.find({ _id: _id }).populate({ path: 'electorates', match: { status: 1 } }).exec();
+                const count = result[0].electorates.length;
+                console.log(`Current checked electorates count: ${count}`);
+                resolve(count);
+            } catch (err) {
+                console.log(`현재 투표용지 수령 확인된 선거권자 수 조회 오류: ${err}`);
+                reject("현재 투표용지 수령 확인된 선거권자 수 조회 실패");
+            }
+        })
     }
 
     // 인증번호 생성 및 조회
@@ -53,11 +84,11 @@ class ElectorateModel {
     updateStatus(_id) {
         return new Promise(async (resolve, reject) => {
             try {
-                await Electorate.updateOne({ _id }, { $inc: { status: 1 } });
+                await Electorate.updateOne({ _id }, { $set: { status: 1, completed: Date.now() } });
                 const result = await Electorate.findById(_id);
-                if(result.status > 2) await Electorate.updateOne({ _id }, { completed: Date.now() });
                 resolve(result);
             } catch(err) {
+                console.log(err);
                 reject(err);
             }
         });

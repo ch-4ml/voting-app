@@ -14,7 +14,8 @@ const voteSchema = mongoose.Schema({
     votes2      : { type: Number, default: 0 }, // 안수집사 총 투표 수
     votes3      : { type: Number, default: 0 }, // 권사 총 투표 수
     electorates : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Electorate' }], // 선거권자
-    status      : { type: Number, default: 0 } // 0: 투표 전 / 1: 투표 중 / 2: 투표 종료
+    participants: { type: Number, default: 0 }, // 선거 참여자 수
+    status      : { type: Number, default: 0 }  // 0: 투표 전 / 1: 투표 중 / 2: 투표 종료
 });
 
 module.exports = mongoose.model('Vote', voteSchema);

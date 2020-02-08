@@ -6,15 +6,19 @@ export default class NavbarClass extends Component {
     super(props)
     this.state = {
       loggedIn: false,
+      isRoot: false,
     }
   }
 
   componentDidMount() {
     this.sessionApi()
       .then(res => {
-        res.result
-          ? this.setState({ loggedIn: true })
-          : this.setState({ loggedIn: false })
+        if(res.result) {
+          this.setState({ loggedIn: true })
+          if(res.data._doc.rank === 0) {
+            this.setState({ isRoot: true })
+          }
+        }
       })
       .catch(err => console.log(err))
   }
@@ -56,8 +60,13 @@ export default class NavbarClass extends Component {
             <Nav className='mr-auto'>
               <Nav.Link href='/'>진행중인 선거 목록</Nav.Link>
             </Nav>
-            {this.state.loggedIn ? <Nav><Nav.Link href='/results'>완료된 선거 목록</Nav.Link><Nav.Link href='/create'>선거 만들기</Nav.Link><Nav.Link href='/' onClick={this.logout}>로그아웃</Nav.Link><Nav.Link href='/signup'>관리자 추가</Nav.Link></Nav>
+            {this.state.loggedIn
+            ? <Nav><Nav.Link href='/results'>완료된 선거 목록</Nav.Link><Nav.Link href='/' onClick={this.logout}>로그아웃</Nav.Link></Nav>
               : <Nav><Nav.Link href='/signin'>관리자</Nav.Link></Nav>
+            }
+            {this.state.loggedIn && this.state.isRoot
+            ? <Nav><Nav.Link href='/create'>선거 만들기</Nav.Link><Nav.Link href='/signup'>관리자 추가</Nav.Link></Nav>
+              : <Nav></Nav>
             }
           </Navbar.Collapse>
         </Navbar>

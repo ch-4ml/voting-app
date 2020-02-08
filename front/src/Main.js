@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { ListGroup } from 'react-bootstrap'
+import moment from 'moment'
 
 import { VoteListItem } from './components/List'
 
@@ -38,11 +39,11 @@ export default class Main extends Component {
                         {this.state.voteList.map(voteList => {
                             return (
                                 <VoteListItem
-                                    href={`/auth/${voteList._id}`}
+                                    href={`/liveCheck/${voteList._id}`}
                                     key={`voteList-${voteList._id}`}
                                     title={voteList.title}
-                                    begin_date={voteList.begin}
-                                    end_date={voteList.end}
+                                    begin_date={moment(voteList.begin).format('YYYY-MM-DD')}
+                                    end_date={moment(voteList.end).format('YYYY-MM-DD')}
                                 />
                             )
                         })}
