@@ -4,22 +4,35 @@ import { confirmAlert } from 'react-confirm-alert'
 import 'react-confirm-alert/src/react-confirm-alert.css'
 
 import { Alert } from '../../components/Alert'
+import { BlockButton } from '../../components/Button'
 import { NonLabelInputForm } from '../../components/Form'
-
-// const FormStyle = {
-//     marginBottom: 8
-// }
 
 export default class LiveCheck extends Component {
     constructor(props) {
         super(props)
         this.state = {
             voteId: this.props.match.params.voteId,
-
             name: '',
-            // name_ex: '',
-            // auth: ''
+            isAdmin: false, // 사용자 구분
+            eleList: [], // 선거권자 리스트
         }
+    }
+
+    componentWillMount() {
+        this.sessionApi()
+            .then(res => {
+                res.result
+                    ? this.setState({ isAdmin: true })
+                    : confirmAlert({
+                        customUI: () => {
+                            return (
+                                <Alert content='관리자로 로그인 후 이용해주세요.' label='확인' href='/' />
+                            )
+                        },
+                        closeOnClickOutside: false
+                    })
+            })
+            .catch(err => console.log(err))
     }
 
     handleChange = e => {
@@ -41,8 +54,6 @@ export default class LiveCheck extends Component {
                 body: JSON.stringify({
                     'vote_id': voteId,
                     'name': name,
-                    // 'name_ex': name_ex,
-                    // 'auth': auth
                 })
             })
                 .then(result => result.json())
@@ -67,43 +78,24 @@ export default class LiveCheck extends Component {
                             closeOnClickOutside: false
                         })
                     }
-                    /* if (json.status) {
-                        window.sessionStorage.setItem('name', json.session.name)
-                        window.sessionStorage.setItem('status', json.session.status)
-                        switch(json.session.status) {
-                            case 0:
-                                window.location.assign(`/voting/${this.state.voteId}/1`)
-                                break;
-                            case 1:
-                                window.location.assign(`/voting/${this.state.voteId}/2`)
-                                break;
-                            case 2:
-                                window.location.assign(`/voting/${this.state.voteId}/3`)
-                                break;
-                            default:
-                                confirmAlert({
-                                    customUI: () => {
-                                        return (
-                                            <Alert content='이미 투표하셨습니다.' label='확인' href='' />
-                                        )
-                                    },
-                                    closeOnClickOutside: false
-                                })
-                            }
-                    } else {
-                        confirmAlert({
-                            customUI: () => {
-                                return (
-                                    <Alert content='일치하는 회원이 없거나 이미 투표한 회원입니다.' label='확인' href='' />
-                                )
-                            },
-                            closeOnClickOutside: false
-                        })
-                    } */
                 })
                 .catch(err => {
                     console.log(err)
                 })
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
+    submitBtn = () => {
+        window.location.assign(`/admin/${this.state.voteId}`)
+    }
+
+    sessionApi = async () => {
+        try {
+            const response = await fetch('/session')
+            if (response.status !== 200) throw Error(response.json().msg)
+            return response.json()
         } catch (err) {
             console.log(err)
         }
@@ -114,11 +106,6 @@ export default class LiveCheck extends Component {
             <div style={{ marginTop: 25, padding: 15, flex: 1 }}>
                 <h3 style={{ marginTop: 30, marginBottom: 50, textAlign: 'center' }}>현장 인증</h3>
                 <Card>
-                    {/* <Card.Header style={{ backgroundColor: '#fff', border: 2, marginBottom: -20 }}>
-                        <NonLabelInputForm type='text' name='name' placeholder='이름을 입력해주세요.' change={this.handleChange} style={FormStyle} />
-                        <NonLabelInputForm type='text' name='name_ex' placeholder='이름 구분자를 입력해주세요.' change={this.handleChange} style={FormStyle} />
-                    </Card.Header>
-                    <hr />  */}
                     <Card.Body>
                         <InputGroup size='lg'>
                             <NonLabelInputForm type='text' name='name' placeholder='이름을 입력해주세요.' change={this.handleChange} />
@@ -128,6 +115,14 @@ export default class LiveCheck extends Component {
                         </InputGroup>
                     </Card.Body>
                 </Card>
+
+                {this.state.isAdmin
+                    && <>
+                        <div style={{ marginTop: 40 }}>
+                            <BlockButton click={this.submitBtn} label='현재 투표 현황' />
+                        </div>
+                    </>
+                }
             </div>
         )
     }

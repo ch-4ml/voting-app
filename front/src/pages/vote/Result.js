@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { ListGroup } from 'react-bootstrap'
+import moment from 'moment'
 
 import { confirmAlert } from 'react-confirm-alert'
 import 'react-confirm-alert/src/react-confirm-alert.css'
@@ -69,8 +70,8 @@ export default class Result extends Component {
                                     href={`/result/${voteList._id}/1`}
                                     key={`voteList-${voteList._id}`}
                                     title={voteList.title}
-                                    begin_date={voteList.begin}
-                                    end_date={voteList.end}
+                                    begin_date={moment(voteList.begin).format('YYYY-MM-DD')}
+                                    end_date={moment(voteList.end).format('YYYY-MM-DD')}
                                 />
                             )
                         })}

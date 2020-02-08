@@ -12,6 +12,7 @@ import Auth_Live from './pages/auth/Live';
 import Auth_Admin from './pages/auth/Admin';
 
 import Create from './pages/vote/Create';
+import Insert from './pages/vote/Insert';
 
 import Voting from './pages/vote/Voting';
 
@@ -41,6 +42,7 @@ export default class App extends Component {
             <Route path='/signup' component={Admin_SignUp} />
             {/* 선거 만들기 */}
             <Route path='/create' component={Create} />
+            <Route path='/insert/:voteId' component={Insert} />
             {/* 투표하기 */}
             <Route path='/voting/:voteId/:type' component={Voting} />
             {/* 투표 완료 상세정보*/}

@@ -39,7 +39,7 @@ export const VoteForm = props => {
             </FormGroup>
             {props.dataLoaded &&
                 <div style={{ margin: 20 }}>
-                    <Card body outline='true' className='restrict-card'>
+                    <Card body outline='true' className='restrict-card' style={{ height: '400px', overflow: 'auto'}}>
                         <OutTable data={props.data} columns={props.columns} tableClassName='ExcelTable2007' />
                     </Card>
                 </div>}
