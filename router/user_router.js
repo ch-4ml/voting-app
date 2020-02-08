@@ -76,7 +76,6 @@ userRouter.post('/electorate', async (req, res) => {
         } else { // 데이터 없음
             data = { status: false, msg: '목록에서 일치하는 선거권자 없음', session: req.session.electorate };
         }
-        console.log(data);
         res.status(200).send(data);
     } catch (err) {
         data = { status: false, msg: `선거권자 인증 오류: ${err}` };
@@ -96,7 +95,6 @@ userRouter.post('/electorate/all', async (req, res) => {
         } else { // 데이터 없음
             data = { status: false, msg: '목록에서 일치하는 선거권자 없음', session: req.session.electorate };
         }
-        console.log(data);
         res.status(200).send(data);
     } catch (err) {
         data = { status: false, msg: `선거권자 인증 오류: ${err}` };

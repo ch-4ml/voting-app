@@ -24,8 +24,9 @@ class ElectorateModel {
     select(_id, name) { // 선거 id, 선거권자 name
         return new Promise(async (resolve, reject) => {
             try {
-                const result = await Vote.find({ _id: _id }).populate({ path: 'electorates', match: { name: { $regex: name } } }).exec();
-                console.log(`Electorates select result: ${result[0].electorates}`);
+                console.log(`id in select: ${_id}`);
+                const result = await Vote.find({ _id: _id }).populate({ path: 'electorates', match: { name: { $regex: '.*' + name + '.*' } } }).exec();
+                console.log(`Electorates select result: ${result[0].electorates.length}`);
                 resolve(result[0].electorates);
             } catch (err) {
                 console.log(`선거권자 조회 오류: ${err}`);
@@ -38,8 +39,9 @@ class ElectorateModel {
     selectAll(_id) {
         return new Promise(async (resolve, reject) => {
             try {
+                console.log(`id in selectAll: ${_id}`);
                 const result = await Vote.find({ _id: _id }).populate({ path: 'electorates' }).exec();
-                console.log(`Electorates select result: ${result[0].electorates}`);
+                console.log(`Electorates select result: ${result[0].electorates.length}`);
                 resolve(result[0].electorates);
             } catch (err) {
                 console.log(`선거권자 조회 오류: ${err}`);
@@ -50,10 +52,12 @@ class ElectorateModel {
 
     count(_id) {
         return new Promise(async (resolve, reject) => {
-            try {
+            try {                
+                console.log(`id in count: ${_id}`);
                 const result = await Vote.find({ _id: _id }).populate({ path: 'electorates', match: { status: 1 } }).exec();
-                console.log(`Current checked electorates count: ${result}`);
-                resolve(result);
+                const count = result[0].electorates.length;
+                console.log(`Current checked electorates count: ${count}`);
+                resolve(count);
             } catch (err) {
                 console.log(`현재 투표용지 수령 확인된 선거권자 수 조회 오류: ${err}`);
                 reject("현재 투표용지 수령 확인된 선거권자 수 조회 실패");
