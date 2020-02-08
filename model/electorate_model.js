@@ -35,6 +35,19 @@ class ElectorateModel {
         });
     }
 
+    count(_id) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const result = await Vote.find({ _id: _id }).populate({ path: 'electorates' }).count({ status: 1 }).exec();
+                console.log(`Current checked electorates count: ${result}`);
+                resolve(result);
+            } catch (err) {
+                console.log(`현재 투표용지 수령 확인된 선거권자 수 조회 오류: ${err}`);
+                reject("현재 투표용지 수령 확인된 선거권자 수 조회 실패");
+            }
+        })
+    }
+
     // 인증번호 생성 및 조회
     updateAuth(_id) { // 선거권자 id
         let auth = this.authGenerator(Math.floor(Math.random() * 10000), 4);
@@ -54,9 +67,8 @@ class ElectorateModel {
     updateStatus(_id) {
         return new Promise(async (resolve, reject) => {
             try {
-                await Electorate.updateOne({ _id }, { $inc: { status: 1 } });
+                await Electorate.updateOne({ _id }, { $inc: { status: 1, completed: Date.now() } });
                 const result = await Electorate.findById(_id);
-                if(result.status > 2) await Electorate.updateOne({ _id }, { completed: Date.now() });
                 resolve(result);
             } catch(err) {
                 reject(err);

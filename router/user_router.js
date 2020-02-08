@@ -70,116 +70,47 @@ userRouter.post('/electorate', async (req, res) => {
     // const auth = req.body.auth;
     try {
         const result = await electorateModel.select(vote_id, name);
-        const electorate = result[0]._doc;
+        const electorate = result;
         if (electorate) {   
-            if(electorate.status === 0) {
-                data = { status: true, msg: '인증 성공.', session: req.session.electorate };
-                await electorateModel.updateStatus(electorate._id);
-            } else {
-                data = { status: false, msg: '이미 투표함', session: req.session.electorate };
-            }
-            /* if (electorate.auth !== parseInt(auth)) { // 인증번호가 일치하지 않는 경우
-                // 인증번호 불일치
-                console.log('인증번호 불일치');
-                data = { status: false, msg: '인증번호 불일치.' };
-            } else if (electorate.completed) { // 이미 투표한 경우
-                console.log('이미 투표함');
-                data = { status: false, msg: '이미 투표함.' };
-            } else {
-                console.log('인증 성공');
-                req.session.electorate = { ...electorate, auth: '********' };
-                console.log(req.session.electorate);
-                data = { status: true, msg: '인증 성공.', session: req.session.electorate }
-            } */
+            data = { status: true, msg: '선거권자 조회 성공', session: req.session.electorate, data: electorate };
         } else { // 데이터 없음
-            data = { status: false, msg: '일치하는 데이터 없음.' }
+            data = { status: false, msg: '목록에서 일치하는 선거권자 없음', session: req.session.electorate };
         }
+        console.log(data);
         res.status(200).send(data);
     } catch (err) {
-        data = { status: false, msg: `선거권자 인증 오류: ${err}` }
+        data = { status: false, msg: `선거권자 인증 오류: ${err}` };
         res.status(500).send(data);
     }
 });
 
-// 휴대폰 번호로 인증번호 조회
-userRouter.post('/auth', async (req, res) => {
+// 투표 용지 수령
+userRouter.post('/check', async (req, res) => {
+    let data;
+    const electorate_id = req.body.electorate_id;
+
+    try {
+        await electorateModel.updateStatus(electorate_id);
+        data = { status: true, msg: `투표용지 수령` };
+        res.status(200).send(data);
+    } catch(err) {
+        data = { status: false, msg: `투표용지 수령 오류: ${err}` };
+        res.status(500).send(data);
+    }
+});
+
+// 투표한 사람 수
+userRouter.post('/count', async (req, res) => {
     let data;
     const vote_id = req.body.vote_id;
-    const name = req.body.name;
-    const phone = req.body.phone;
-    try {
-        let result = await electorateModel.select(vote_id, name);
-        let a_phone = new Array(); // 폰 번호 배열 
-        a_phone.push(phone);
-        console.log(result[0]); // resolve로 받을 때 다시 배열로 묶임
-        const electorate = result[0];
-        if(electorate) {
-            if (phone === electorate.phone) {
-                let auth = await electorateModel.updateAuth(electorate._id);
-                console.log(auth);
-                // 생성된 인증번호를 휴대폰으로 전송
-                let config = {
-                    uri: `https://api-sens.ncloud.com/v1/sms/services/${process.env.SENS_SERVICEID}/messages`,
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json; charset=utf-8',
-                        'x-ncp-auth-key': process.env.SENS_AUTHKEY,
-                        'x-ncp-service-secret': process.env.SENS_SERVICESECRET,
-                    },
-                    json: {
-                        'type': 'SMS',
-                        'from': process.env.SENS_SENDNUMBER,
-                        'to': a_phone,
-                        'content': `[높은 뜻 정의교회]${electorate.name}님. 인증번호는 [${auth}] 입니다.`
-                    }
-                };
-                let response = await request(config);
-                console.log("메시지 전송: " + response.status);
-                data = { status: true, msg: '인증번호 전송 성공', auth: auth };
-                res.status(200).send(data);
-            } else { // 해당 투표 선거권자에 포함되지 않았음
-                data = { status: false, msg: '입력 값과 일치하는 정보 없음' }
-                res.status(500).send(data);
-            }
-        } else {
-                data = { status: false, msg: '입력 값과 일치하는 정보 없음' }
-                res.status(500).send(data);
-        }
-    } catch (err) {
-        console.log(err);
-        data = { status: false, msg: `인증번호 조회 오류: ${err}` }
-        res.status(500).send(data);
-    }
-});
 
-// 투표
-userRouter.put('/vote', async (req, res) => {
-    let data;
-    // 회원이 선택한 후보자 목록 받아와서 득표수 올려줌
-    const vid = req.body.vote_id;
-    const eid = req.session.electorate._id;
-    const type = req.body.type;
-    const candidatesIdArray = req.body.candidates;
-    console.log(`session test: ${eid}`);
     try {
-        let result = await voteModel.select(vid);
-        let end = result.end;
-        if (moment(end).isSameOrBefore(moment(), 'second')) {
-            console.log('시간오류');
-            data = { result: false, msg: '투표 종료 시간 경과' };
-            res.status(500).send(data);
-        } else {
-            console.log('투표 가능');
-            // candidateModel.updateVotes(vid, candidatesIdArray, type) 라고 되어있었읍니다
-            const result = await voteModel.vote(vid, eid, type, candidatesIdArray);
-            req.session.electorate = { ...result.eResult, auth: '********' }
-            data = { result: true, msg: '투표 성공' };
-            res.status(200).send(data);
-        }
-    } catch (err) {
-        data = { result: false, msg: '투표 실패' };
+        const result = await electorateModel.count(vote_id);
+        data = { status: true, msg: `현재 투표용지 수령 확인된 선거권자 수 조회 성공`, data: result };        
+        res.status(200).send(data);
+    } catch(err) {
+        data = { status: false, msg: `현재 투표용지 수령 확인된 선거권자 수 조회 오류: ${err}` };
         res.status(500).send(data);
-        console.log(err);
     }
 });
 

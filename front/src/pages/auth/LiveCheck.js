@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 import { Button, Card, InputGroup } from 'react-bootstrap'
+import { AlertClose } from '../../components/Alert'
+import update from 'react-addons-update'
 import { confirmAlert } from 'react-confirm-alert'
 import 'react-confirm-alert/src/react-confirm-alert.css'
 
@@ -14,6 +16,7 @@ export default class LiveCheck extends Component {
             voteId: this.props.match.params.voteId,
             name: '',
             isAdmin: false, // 사용자 구분
+            electorateList: [], // 선거권자 가져오기
             eleList: [], // 선거권자 리스트
         }
     }
@@ -58,25 +61,35 @@ export default class LiveCheck extends Component {
             })
                 .then(result => result.json())
                 .then(json => {
-                    console.log(json);
-                    if(json.status) {
-                        confirmAlert({
-                            customUI: () => {
-                                return (
-                                    <Alert content='선거권자 인증에 성공했습니다.' label='확인' href={`/liveCheck/${voteId}`} />
-                                )
-                            },
-                            closeOnClickOutside: false
+                    console.log(json.data)
+                    if (json.status) {
+                        this.setState({ electorateList: json.data })
+
+                        this.state.electorateList.forEach((c) => {
+                            this.setState({
+                                eleList: update(this.state.eleList, { $push: [c.name] }),
+                            })
                         })
+
+                        console.log(this.state.eleList)
+
+                        // confirmAlert({
+                        //     customUI: () => {
+                        //         return (
+                        //             <Alert content='선거권자 인증에 성공했습니다.' label='확인' href={`/liveCheck/${voteId}`} />
+                        //         )
+                        //     },
+                        //     closeOnClickOutside: false
+                        // })
                     } else {
-                        confirmAlert({
-                            customUI: () => {
-                                return (
-                                    <Alert content='일치하는 회원이 없거나 이미 투표한 회원입니다.' label='확인' href={`/liveCheck/${voteId}`} />
-                                )
-                            },
-                            closeOnClickOutside: false
-                        })
+                        // confirmAlert({
+                        //     customUI: () => {
+                        //         return (
+                        //             <Alert content='일치하는 회원이 없거나 이미 투표한 회원입니다.' label='확인' href={`/liveCheck/${voteId}`} />
+                        //         )
+                        //     },
+                        //     closeOnClickOutside: false
+                        // })
                     }
                 })
                 .catch(err => {
@@ -101,7 +114,25 @@ export default class LiveCheck extends Component {
         }
     }
 
+    selectList(id) {
+        console.log(id)
+        confirmAlert({
+            customUI: ({ onClose }) => {
+                return (
+                    <AlertClose content='선택' label='확인' close={() => onClose()} />
+                )
+            },
+            closeOnClickOutside: false
+        })
+    }
+
     render() {
+        let listItem = this.state.electorateList.map(c => {
+            return (
+                <li key={c._id} onClick={this.selectList(c._id)}>{c.name}</li>
+            )
+        })
+
         return (
             <div style={{ marginTop: 25, padding: 15, flex: 1 }}>
                 <h3 style={{ marginTop: 30, marginBottom: 50, textAlign: 'center' }}>현장 인증</h3>
@@ -115,7 +146,7 @@ export default class LiveCheck extends Component {
                         </InputGroup>
                     </Card.Body>
                 </Card>
-
+                {listItem}
                 {this.state.isAdmin
                     && <>
                         <div style={{ marginTop: 40 }}>
