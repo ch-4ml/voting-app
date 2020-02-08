@@ -6,6 +6,7 @@ export default class NavbarClass extends Component {
     super(props)
     this.state = {
       loggedIn: false,
+      isRoot: false,
     }
   }
 
@@ -56,7 +57,8 @@ export default class NavbarClass extends Component {
             <Nav className='mr-auto'>
               <Nav.Link href='/'>진행중인 선거 목록</Nav.Link>
             </Nav>
-            {this.state.loggedIn ? <Nav><Nav.Link href='/results'>완료된 선거 목록</Nav.Link><Nav.Link href='/create'>선거 만들기</Nav.Link><Nav.Link href='/' onClick={this.logout}>로그아웃</Nav.Link><Nav.Link href='/signup'>관리자 추가</Nav.Link></Nav>
+            {this.state.loggedIn
+            ? <Nav><Nav.Link href='/results'>완료된 선거 목록</Nav.Link><Nav.Link href='/create'>선거 만들기</Nav.Link><Nav.Link href='/' onClick={this.logout}>로그아웃</Nav.Link><Nav.Link href='/signup'>관리자 추가</Nav.Link></Nav>
               : <Nav><Nav.Link href='/signin'>관리자</Nav.Link></Nav>
             }
           </Navbar.Collapse>

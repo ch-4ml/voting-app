@@ -24,8 +24,21 @@ class ElectorateModel {
     select(_id, name) { // 선거 id, 선거권자 name
         return new Promise(async (resolve, reject) => {
             try {
-                // const result = await Vote.find({ _id: _id }).populate({ path: 'electorates', match: { name: name } }).exec();
                 const result = await Vote.find({ _id: _id }).populate({ path: 'electorates', match: { name: { $regex: name } } }).exec();
+                console.log(`Electorates select result: ${result[0].electorates}`);
+                resolve(result[0].electorates);
+            } catch (err) {
+                console.log(`선거권자 조회 오류: ${err}`);
+                reject("선거권자 조회 실패");
+            }
+        });
+    }
+
+    // 선거권자 전체 조회
+    selectAll(_id) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const result = await Vote.find({ _id: _id }).populate({ path: 'electorates' }).exec();
                 console.log(`Electorates select result: ${result[0].electorates}`);
                 resolve(result[0].electorates);
             } catch (err) {
@@ -38,7 +51,7 @@ class ElectorateModel {
     count(_id) {
         return new Promise(async (resolve, reject) => {
             try {
-                const result = await Vote.find({ _id: _id }).populate({ path: 'electorates' }).count({ status: 1 }).exec();
+                const result = await Vote.find({ _id: _id }).populate({ path: 'electorates', match: { status: 1 } }).exec();
                 console.log(`Current checked electorates count: ${result}`);
                 resolve(result);
             } catch (err) {
@@ -67,10 +80,11 @@ class ElectorateModel {
     updateStatus(_id) {
         return new Promise(async (resolve, reject) => {
             try {
-                await Electorate.updateOne({ _id }, { $inc: { status: 1, completed: Date.now() } });
+                await Electorate.updateOne({ _id }, { $set: { status: 1, completed: Date.now() } });
                 const result = await Electorate.findById(_id);
                 resolve(result);
             } catch(err) {
+                console.log(err);
                 reject(err);
             }
         });
