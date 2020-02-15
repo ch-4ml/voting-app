@@ -70,10 +70,12 @@ adminRouter.post('/admin/electorate', async (req, res) => {
     console.log(`electorate list length: ${electoratesList.length}`);
 
     for (let i = 0; i < electoratesList.length; i++) {
+        let birth = electoratesList[i][2].toString();
+        let formattedBirth = birth.substring(0, 4) + "-" + birth.substring(4, 6) + "-" + birth.substring(6, 8);
         const electorate = {
             // 이름 합치고,  파일에 맞게 순서 바꿈
             name: electoratesList[i][1],
-            birth: electoratesList[i][2],
+            birth: formattedBirth,
             phone: String(electoratesList[i][4]).replace(/-/g, ""),
         };
         electorates.push(electorate);

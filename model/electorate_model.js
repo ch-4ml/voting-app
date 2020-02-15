@@ -35,6 +35,22 @@ class ElectorateModel {
         });
     }
 
+    // 선거권자 아이디로 조회
+    selectById(_id, electorate_id) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                console.log(`id in select: ${_id}`);
+                const result = await Vote.find({ _id: _id }).populate({ path: 'electorates', match: { _id: electorate_id } }).exec();
+                console.log(`Electorates select result: ${result[0].electorates.length}`);
+                console.log(result[0].electorates[0]);
+                resolve(result[0].electorates[0]);
+            } catch (err) {
+                console.log(`선거권자 조회 오류: ${err}`);
+                reject("선거권자 조회 실패");
+            }
+        });
+    }
+
     // 선거권자 전체 조회
     selectAll(_id) {
         return new Promise(async (resolve, reject) => {
@@ -81,12 +97,11 @@ class ElectorateModel {
     }
 
     // 선거권자 상태 변경
-    updateStatus(_id) {
+    updateStatus(_id, status) {
         return new Promise(async (resolve, reject) => {
             try {
-                await Electorate.updateOne({ _id }, { $set: { status: 1, completed: Date.now() } });
-                const result = await Electorate.findById(_id);
-                resolve(result);
+                await Electorate.updateOne({ _id }, { $set: { status: status, completed: Date.now() } });
+                resolve(`update 성공`);
             } catch(err) {
                 console.log(err);
                 reject(err);

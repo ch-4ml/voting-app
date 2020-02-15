@@ -1,10 +1,8 @@
 import React, { Component } from 'react'
-import { Button, Card, InputGroup } from 'react-bootstrap'
 import { confirmAlert } from 'react-confirm-alert'
 import 'react-confirm-alert/src/react-confirm-alert.css'
 
-import { Alert, AlertClose } from '../../components/Alert'
-import { NonLabelInputForm } from '../../components/Form'
+import { Alert } from '../../components/Alert'
 
 export default class LiveCheck extends Component {
     constructor(props) {
@@ -116,7 +114,7 @@ export default class LiveCheck extends Component {
             <div style={{ marginTop: 25, padding: 15, flex: 1 }}>
                 <h3 style={{ marginTop: 30, marginBottom: 50, textAlign: 'center' }}>선거권자 인증</h3>
                 <div style={{ marginTop: 40 }}>
-                    <h5 style={{ marginTop: 30, marginBottom: 50, textAlign: 'center' }}>전체 투표 현황 : {this.state.count}명 / {this.state.totalCount}명</h5>
+                    <h5 style={{ marginTop: 30, marginBottom: 50, textAlign: 'center' }}>전체 투표 현황 : {this.state.count}명</h5>
                 </div>
                 {listItem}
             </div>

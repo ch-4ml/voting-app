@@ -62,7 +62,7 @@ userRouter.post('/finvote', async (req, res) => {
     }
 });
 
-// 선거권자 조회 
+// 선거권자 이름으로 조회 
 userRouter.post('/electorate', async (req, res) => {
     let data;
     const vote_id = req.body.vote_id;
@@ -72,13 +72,32 @@ userRouter.post('/electorate', async (req, res) => {
         const result = await electorateModel.select(vote_id, name);
         const electorate = result;
         if (electorate) {   
-            data = { status: true, msg: '선거권자 조회 성공', session: req.session.electorate, data: electorate };
+            data = { status: true, msg: '선거권자 이름으로 조회 성공', session: req.session.electorate, data: electorate };
         } else { // 데이터 없음
             data = { status: false, msg: '목록에서 일치하는 선거권자 없음', session: req.session.electorate };
         }
         res.status(200).send(data);
     } catch (err) {
-        data = { status: false, msg: `선거권자 인증 오류: ${err}` };
+        data = { status: false, msg: `선거권자 이름으로 조회 오류: ${err}` };
+        res.status(500).send(data);
+    }
+});
+
+// 선거권자 아이디로 조회
+userRouter.post('/electorate/id', async (req, res) => {
+    let data;
+    const vote_id = req.body.vote_id;
+    const electorate_id = req.body.electorate_id;
+    try {
+        const result = await electorateModel.selectById(vote_id, electorate_id);
+        if (result) {   
+            data = { status: true, msg: '선거권자 아이디로 조회 성공', session: req.session.electorate, data: result };
+        } else { // 데이터 없음
+            data = { status: false, msg: '목록에서 일치하는 선거권자 없음', session: req.session.electorate };
+        }
+        res.status(200).send(data);
+    } catch (err) {
+        data = { status: false, msg: `선거권자 아이디로 조회 오류` };
         res.status(500).send(data);
     }
 });
@@ -107,11 +126,25 @@ userRouter.post('/check', async (req, res) => {
     let data;
     const electorate_id = req.body.electorate_id;
     try {
-        await electorateModel.updateStatus(electorate_id);
+        await electorateModel.updateStatus(electorate_id, 1); // 수령한 상태
         data = { status: true, msg: `투표용지 수령` };
         res.status(200).send(data);
     } catch(err) {
         data = { status: false, msg: `투표용지 수령 오류: ${err}` };
+        res.status(500).send(data);
+    }
+});
+
+// 투표 용지 수령 취소(관리자가 잘못 선택한 경우, 최고 관리자에 한해서 허용)
+userRouter.post('/uncheck', async (req, res) => {
+    let data;
+    const electorate_id = req.body.electorate_id;
+    try {
+        await electorateModel.updateStatus(electorate_id, 0); // 수령한 상태
+        data = { status: true, msg: `투표용지 수령 취소` };
+        res.status(200).send(data);
+    } catch(err) {
+        data = { status: false, msg: `투표용지 수령 취소 오류: ${err}` };
         res.status(500).send(data);
     }
 });

@@ -14,7 +14,7 @@ export const InputForm = props => {
 
 export const NonLabelInputForm = props => {
     return (
-        <Form.Control type={props.type} name={props.name} placeholder={props.placeholder} size='lg' onChange={props.change} style={props.style} />
+        <Form.Control type={props.type} name={props.name} placeholder={props.placeholder} size='lg' onChange={props.change} onKeyPress={props.onKeyPress} style={props.style} />
     )
 }
 
